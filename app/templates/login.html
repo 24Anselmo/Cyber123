@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyberbullying Detector - Login</title>
+    <link rel="icon" href="{{ url_for('static', filename='logo.png') }}" type="image/png">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2.5rem 2.5rem 2rem;
+            width: 380px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+        .login-card .logo { max-width: 180px; margin-bottom: 1rem; border-radius: 8px; }
+        .login-card h1 { font-size: 1.3rem; color: #1f2937; margin-bottom: 0.25rem; }
+        .login-card .sub { font-size: 0.8rem; color: #6b7280; margin-bottom: 1.5rem; }
+        .login-card .error { color: #dc2626; font-size: 0.85rem; margin-bottom: 0.75rem; min-height: 1.2rem; }
+        .login-card label { display: block; text-align: left; font-size: 0.85rem; font-weight: 600; color: #374151; margin-bottom: 0.25rem; }
+        .login-card input {
+            width: 100%;
+            padding: 0.7rem 0.9rem;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+            font-family: inherit;
+        }
+        .login-card input:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.15); }
+        .login-card button {
+            width: 100%;
+            padding: 0.75rem;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-family: inherit;
+        }
+        .login-card button:hover { background: #1d4ed8; }
+        .login-card .footer { font-size: 0.7rem; color: #9ca3af; margin-top: 1.5rem; }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="logo">
+        <h1>Cyberbullying Detector</h1>
+        <p class="sub">Saurimo, Angola</p>
+        <div class="error">{{ erro }}</div>
+        <form method="POST">
+            <label for="username">Usuário</label>
+            <input type="text" id="username" name="username" placeholder="admin" required autofocus>
+            <label for="password">Senha</label>
+            <input type="password" id="password" name="password" placeholder="••••" required>
+            <button type="submit">🔑 Entrar</button>
+        </form>
+        <p class="footer">PP1 - Eng. Software + SO | IPLS 2026</p>
+    </div>
+</body>
+</html>

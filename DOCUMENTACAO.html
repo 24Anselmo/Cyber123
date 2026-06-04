@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<title>Sistema de Deteção de Cyberbullying — Documentação Técnica</title>
+<style>
+  body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 1000px; margin: 0 auto; padding: 2rem; color: #1f2937; line-height: 1.6; font-size: 14px; }
+  h1 { font-size: 1.8rem; color: #1e40af; border-bottom: 3px solid #2563eb; padding-bottom: 0.5rem; margin-top: 1.5rem; }
+  h2 { font-size: 1.4rem; color: #1e40af; border-bottom: 2px solid #93c5fd; padding-bottom: 0.3rem; margin-top: 1.5rem; }
+  h3 { font-size: 1.15rem; color: #1e40af; margin-top: 1.2rem; }
+  h4 { font-size: 1rem; color: #374151; margin-top: 1rem; }
+  .subtitle { font-size: 1rem; color: #6b7280; margin-top: -0.5rem; margin-bottom: 1rem; }
+  hr { border: none; border-top: 1px solid #e5e7eb; margin: 1.5rem 0; }
+  table { border-collapse: collapse; width: 100%; margin: 0.75rem 0; font-size: 0.9rem; }
+  th, td { border: 1px solid #d1d5db; padding: 0.4rem 0.6rem; text-align: left; }
+  th { background: #2563eb; color: white; font-weight: 600; white-space: nowrap; }
+  tr:nth-child(even) { background: #f9fafb; }
+  pre { background: #1e293b; color: #e2e8f0; padding: 0.75rem; border-radius: 6px; overflow-x: auto; font-size: 0.83rem; line-height: 1.5; }
+  code { background: #f3f4f6; padding: 0.1rem 0.3rem; border-radius: 3px; font-size: 0.88rem; }
+  pre code { background: none; padding: 0; font-size: 0.83rem; }
+  ul, ol { margin: 0.4rem 0; padding-left: 1.5rem; }
+  li { margin: 0.2rem 0; }
+  strong { color: #1f2937; }
+  .toc { background: #f3f4f6; padding: 1rem 1.5rem; border-radius: 8px; margin: 1rem 0; }
+  .toc a { color: #2563eb; text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+  .cred { background: #f0fdf4; border-left: 4px solid #16a34a; padding: 0.75rem 1rem; border-radius: 0 6px 6px 0; margin: 1rem 0; }
+  .cred table { margin: 0.5rem 0; }
+  @media print { body { padding: 0; font-size: 12px; } h1 { font-size: 1.5rem; } h2 { font-size: 1.2rem; } }
+</style>
+</head>
+<body>
+
+<h1>🛡️ Sistema de Deteção de Cyberbullying — Documentação Técnica</h1>
+<p class="subtitle">
+  <strong>Instituto Superior Politécnico da Lunda-Sul — Saurimo, Angola</strong><br>
+  PP1 — Engenharia de Software I + Sistemas Operacionais | 2026
+</p>
+
+<hr>
+
+<h2>Índice</h2>
+<div class="toc">
+<ol>
+  <li><a href="#s1">Visão Geral</a></li>
+  <li><a href="#s2">Arquitetura do Sistema</a></li>
+  <li><a href="#s3">Instalação e Configuração</a></li>
+  <li><a href="#s4">Guia de Utilização</a></li>
+  <li><a href="#s5">API REST</a></li>
+  <li><a href="#s6">Motor de Deteção</a></li>
+  <li><a href="#s7">Base de Dados</a></li>
+  <li><a href="#s8">Gestão de Utilizadores e Permissões</a></li>
+  <li><a href="#s9">Empacotamento (EXE)</a></li>
+  <li><a href="#s10">Manutenção e Resolução de Problemas</a></li>
+  <li><a href="#s11">Credenciais</a></li>
+  <li><a href="#s12">Equipa de Desenvolvimento</a></li>
+</ol>
+</div>
+
+<hr>
+
+<h2 id="s1">1. Visão Geral</h2>
+<p>Sistema multiplataforma para deteção de cyberbullying em texto, desenvolvido para o Instituto Superior Politécnico da Lunda-Sul (Saurimo, Angola). Combina uma interface <strong>web</strong> (Flask) e uma aplicação <strong>desktop</strong> (Tkinter) que partilham a mesma base de dados SQLite e o mesmo motor de deteção enriquecido.</p>
+
+<h3>1.1 Funcionalidades Principais</h3>
+<table>
+  <tr><th>Funcionalidade</th><th>Descrição</th></tr>
+  <tr><td>Análise de texto em tempo real</td><td>Classifica como Crítico / Ofensivo / Suspeito / Neutro</td></tr>
+  <tr><td>Dicionário alargado</td><td>181+ palavras ofensivas + 40+ gírias regionais angolanas</td></tr>
+  <tr><td>Classificação por níveis</td><td>crítico, alto, médio, baixo, neutro</td></tr>
+  <tr><td>Alertas inteligentes</td><td>Threshold ≥ 50% de confiança (Suspeito+)</td></tr>
+  <tr><td>Interface web e desktop</td><td>Mesma BD partilhada, mesma experiência</td></tr>
+  <tr><td>Servidor web embutido</td><td>Desktop inicia Flask automaticamente após login</td></tr>
+  <tr><td>Autenticação</td><td>Login protegido em ambos os sistemas</td></tr>
+  <tr><td>Controlo de acesso</td><td>Papéis: admin e moderador</td></tr>
+  <tr><td>Auto-save</td><td>Toda análise é guardada automaticamente na BD</td></tr>
+  <tr><td>Exportação de relatórios</td><td>CSV e TXT</td></tr>
+  <tr><td>Report ao Facebook</td><td>Cópia do alerta para área de transferência</td></tr>
+</table>
+
+<h3>1.2 Tecnologias</h3>
+<table>
+  <tr><th>Componente</th><th>Tecnologia</th></tr>
+  <tr><td>Servidor web</td><td>Flask 3.0 (Python)</td></tr>
+  <tr><td>ORM</td><td>SQLAlchemy + SQLite</td></tr>
+  <tr><td>Frontend</td><td>HTML5, CSS3, JavaScript (vanilla)</td></tr>
+  <tr><td>Interface desktop</td><td>Tkinter (Python)</td></tr>
+  <tr><td>Motor de deteção</td><td>Rule-based (dicionário + pesos)</td></tr>
+  <tr><td>CORS</td><td>Flask-CORS</td></tr>
+  <tr><td>Empacotamento</td><td>PyInstaller (executável Windows)</td></tr>
+  <tr><td>Base de dados</td><td>SQLite 3 (WAL mode)</td></tr>
+</table>
+
+<hr>
+
+<h2 id="s2">2. Arquitetura do Sistema</h2>
+
+<h3>2.1 Estrutura de Diretórios</h3>
+<pre><code>cyberbullying_detector/
+├── app/                                # Aplicação Web (Flask)
+│   ├── __init__.py                     # Factory, BD, CORS, migração
+│   ├── models.py                       # Modelos SQLAlchemy
+│   ├── routes.py                       # 24 endpoints REST + login
+│   ├── detector.py                     # Motor de deteção (singleton)
+│   ├── static/
+│   │   ├── css/style.css               # Estilos responsivos
+│   │   ├── js/main.js                  # Lógica frontend completa
+│   │   └── logo.png                    # Logótipo
+│   └── templates/
+│       ├── index.html                  # Dashboard principal
+│       └── login.html                  # Página de autenticação
+├── offline/                            # Aplicação Desktop
+│   ├── desktop_app.py                  # UI Tkinter + servidor web embutido
+│   ├── logo.png                        # Logótipo desktop
+│   ├── iniciar.bat                     # Atalho de execução
+│   ├── CyberbullyingDetector.spec      # Configuração PyInstaller
+│   └── dist/
+│       └── CyberbullyingDetector.exe   # Executável compilado
+├── data/                               # Dados persistentes
+│   ├── cyberbullying.db                # Base de dados SQLite
+│   ├── local_dictionary.json           # Dicionário local (fallback)
+│   └── debug.log                       # Log de diagnóstico
+├── DOCUMENTACAO.html                   # Documentação (HTML)
+├── DOCUMENTACAO.md                     # Documentação (Markdown)
+├── README.md                           # Manual rápido
+├── requirements.txt                    # Dependências Python
+└── run.py                              # Ponto de entrada web</code></pre>
+
+<h3>2.2 Fluxo de Funcionamento</h3>
+<pre><code>                    ┌─────────────────────────┐
+                    │   Base de Dados SQLite    │
+                    │   data/cyberbullying.db   │
+                    └──────────┬──────────────┘
+                               │
+              ┌────────────────┼────────────────┐
+              │                │                │
+              ▼                ▼                ▼
+       ┌──────────┐    ┌──────────────┐    ┌──────────┐
+       │  Desktop  │    │  Servidor    │    │  Web     │
+       │ (Tkinter) │◄──►│  Web Flask   │◄──►│ (Browser)│
+       │  .exe     │    │  (embutido)  │    │localhost │
+       └──────────┘    └──────────────┘    │ :5000    │
+                                            └──────────┘</code></pre>
+<ul>
+  <li>Desktop e Web partilham o mesmo ficheiro <code>cyberbullying.db</code></li>
+  <li>Desktop inicia servidor web Flask automaticamente como thread daemon</li>
+  <li>Motor de deteção (<code>app/detector.py</code>) é o mesmo para ambas as interfaces</li>
+  <li>Toda a análise é auto-salva na BD antes de ser exibida</li>
+</ul>
+
+<h3>2.3 Autenticação e Sessão</h3>
+<ul>
+  <li><strong>Web</strong>: sessão Flask armazenada em cookie assinado (<code>secret_key</code>)</li>
+  <li><strong>Desktop</strong>: login verificado localmente via SQLite; <code>user_id</code>, <code>nome</code> e <code>papel</code> passados ao construtor da app</li>
+  <li><strong>Logout (web)</strong>: <code>session.clear()</code> + redirect para <code>/login</code></li>
+  <li><strong>Logout (desktop)</strong>: <code>root.destroy()</code> + <code>main()</code> (re-inicia ciclo de login)</li>
+  <li><strong>Timeout</strong>: as sessões web não expiram automaticamente (apenas ao fechar o browser ou clicar Sair)</li>
+</ul>
+
+<hr>
+
+<h2 id="s3">3. Instalação e Configuração</h2>
+
+<h3>3.1 Requisitos</h3>
+<ul>
+  <li>Windows 10/11 ou Linux (Ubuntu 22.04+)</li>
+  <li>Python 3.10 ou superior</li>
+  <li>pip (gestor de pacotes Python)</li>
+</ul>
+
+<h3>3.2 Instalação de Dependências</h3>
+<pre><code>cd cyberbullying_detector
+pip install -r requirements.txt</code></pre>
+<p>Conteúdo do <code>requirements.txt</code>:</p>
+<pre><code>flask&gt;=3.0
+flask-sqlalchemy&gt;=3.0
+flask-cors&gt;=4.0</code></pre>
+
+<h3>3.3 Execução</h3>
+
+<h4>Modo Web (Servidor Flask Autónomo)</h4>
+<pre><code>python run.py</code></pre>
+<p>Acessar: <a href="http://localhost:5000" target="_blank">http://localhost:5000</a></p>
+<p>O <code>run.py</code> verifica automaticamente se existe uma base de dados em <code>offline/dist/data/cyberbullying.db</code> (criada pelo EXE). Se existir, utiliza essa para manter consistência.</p>
+
+<h4>Modo Desktop (Tkinter + Servidor Web Embutido)</h4>
+<pre><code>cd offline
+python desktop_app.py</code></pre>
+<p>Ou clicar duas vezes em <code>iniciar.bat</code>. Após login, o servidor web é iniciado automaticamente em <a href="http://localhost:5000" target="_blank">http://localhost:5000</a>.</p>
+
+<h4>Executável Compilado</h4>
+<pre><code>offline/dist/CyberbullyingDetector.exe</code></pre>
+
+<h3>3.4 Configuração</h3>
+<table>
+  <tr><th>Variável de Ambiente</th><th>Descrição</th><th>Padrão</th></tr>
+  <tr><td><code>CYBERBULLYING_DB_PATH</code></td><td>Caminho completo para a BD SQLite</td><td><code>data/cyberbullying.db</code></td></tr>
+</table>
+<p>Se a variável não for definida, o caminho é calculado automaticamente:</p>
+<ul>
+  <li><strong>Script</strong>: diretório raiz do projeto + <code>/data/cyberbullying.db</code></li>
+  <li><strong>EXE</strong>: diretório do executável + <code>/data/cyberbullying.db</code></li>
+</ul>
+
+<hr>
+
+<h2 id="s4">4. Guia de Utilização</h2>
+
+<h3>4.1 Interface Web</h3>
+<p>Acesso: <a href="http://localhost:5000" target="_blank">http://localhost:5000</a></p>
+
+<p><strong>Barra lateral (sidebar):</strong></p>
+<table>
+  <tr><th>Botão</th><th>Visível para</th><th>Descrição</th></tr>
+  <tr><td>🔍 Análise</td><td>Todos</td><td>Inserir texto e classificar</td></tr>
+  <tr><td>🚨 Alertas</td><td>Todos</td><td>Alertas pendentes (≥ 50% confiança)</td></tr>
+  <tr><td>📊 Análises</td><td>Todos</td><td>Histórico de análises</td></tr>
+  <tr><td>📰 Fontes</td><td>Todos</td><td>Gerir fontes Facebook</td></tr>
+  <tr><td>📚 Dicionário</td><td>Todos</td><td>Gerir gírias locais</td></tr>
+  <tr><td>👥 Usuários</td><td>Admin</td><td>Gerir utilizadores</td></tr>
+  <tr><td>📄 Relatório</td><td>Admin</td><td>Estatísticas e exportação</td></tr>
+  <tr><td>⚙️ Inicializar</td><td>Admin</td><td>Carregar dados iniciais</td></tr>
+  <tr><td>📥 Importar Testes</td><td>Admin</td><td>Importar 10 comentários de teste</td></tr>
+  <tr><td>🔄 Atualizar</td><td>Todos</td><td>Atualizar todos os dados</td></tr>
+  <tr><td>🔑 Minha Senha</td><td>Todos</td><td>Alterar própria senha</td></tr>
+  <tr><td>🚪 Sair</td><td>Todos</td><td>Terminar sessão</td></tr>
+</table>
+
+<p><strong>Página de Análise:</strong></p>
+<ol>
+  <li>Digite o texto na caixa de texto</li>
+  <li>Clique "🔍 Analisar" ou pressione <code>Ctrl+Enter</code></li>
+  <li>Veja a classificação, confiança, palavras e gírias detetadas</li>
+</ol>
+
+<p><strong>Página de Alertas:</strong></p>
+<ul>
+  <li>Lista comentários com confiança ≥ 50% ainda não resolvidos</li>
+  <li>Botão ✅ para resolver (marcar como revisto)</li>
+  <li>Botão 📢 para copiar alerta para área de transferência</li>
+</ul>
+
+<h3>4.2 Interface Desktop</h3>
+
+<p><strong>Abas disponíveis (admin):</strong></p>
+<table>
+  <tr><th>Aba</th><th>Descrição</th></tr>
+  <tr><td>🔍 Análise</td><td>Analisar texto com resultado detalhado</td></tr>
+  <tr><td>🚨 Alertas</td><td>Alertas pendentes com auto-refresh (5s)</td></tr>
+  <tr><td>📚 Dicionário</td><td>Gerir gírias e níveis</td></tr>
+  <tr><td>📰 Fontes</td><td>Gerir fontes Facebook</td></tr>
+  <tr><td>📄 Relatório</td><td>Estatísticas e exportação CSV/TXT</td></tr>
+  <tr><td>👥 Usuários</td><td>Gerir equipa (admin apenas)</td></tr>
+</table>
+<p><strong>Abas disponíveis (moderador):</strong> Todas exceto Relatório e Usuários.</p>
+
+<p><strong>Barra de status (inferior):</strong></p>
+<ul>
+  <li>🔑 Alterar Senha — alterar a própria senha</li>
+  <li>🌐 Web: localhost:5000 — clique para abrir navegador</li>
+  <li>🚪 Sair — terminar sessão</li>
+</ul>
+
+<p><strong>Atalhos de teclado:</strong></p>
+<ul>
+  <li><code>Ctrl+Enter</code> — analisar texto rapidamente</li>
+</ul>
+
+<h3>4.3 Gestão de Utilizadores (Admin)</h3>
+
+<p><strong>Criar utilizador:</strong></p>
+<ol>
+  <li>Aba Usuários → botão "➕ Novo Usuário"</li>
+  <li>Preencher Nome, Email, Senha, Papel (admin/moderador)</li>
+  <li>Clicar "💾 Salvar"</li>
+</ol>
+
+<p><strong>Alterar senha de outro utilizador:</strong></p>
+<ol>
+  <li>Aba Usuários → selecionar utilizador na lista</li>
+  <li>Clicar "🔑 Alterar Senha"</li>
+  <li>Escolher novo utilizador e nova senha</li>
+</ol>
+
+<p><strong>Alterar própria senha:</strong></p>
+<ul>
+  <li>Web: sidebar → "🔑 Minha Senha"</li>
+  <li>Desktop: barra de status → "👤 Alterar Senha"</li>
+</ul>
+
+<p><strong>Remover utilizador:</strong></p>
+<ol>
+  <li>Aba Usuários → selecionar utilizador</li>
+  <li>Clicar "🗑️ Remover"</li>
+</ol>
+
+<hr>
+
+<h2 id="s5">5. API REST</h2>
+<p>Todas as rotas (exceto <code>/login</code> e <code>/logout</code>) requerem autenticação por sessão. Retornam <code>401 Unauthorized</code> se não autenticado. Rotas marcadas como <strong>Admin</strong> requerem <code>papel='admin'</code>.</p>
+
+<h3>5.1 Autenticação</h3>
+<table>
+  <tr><th>Método</th><th>Rota</th><th>Acesso</th><th>Descrição</th></tr>
+  <tr><td>GET</td><td><code>/login</code></td><td>Público</td><td>Página de login</td></tr>
+  <tr><td>POST</td><td><code>/login</code></td><td>Público</td><td>Autenticar (<code>username</code>, <code>password</code>)</td></tr>
+  <tr><td>GET</td><td><code>/logout</code></td><td>Público</td><td>Terminar sessão</td></tr>
+</table>
+
+<h3>5.2 Dashboard e Estatísticas</h3>
+<table>
+  <tr><th>Método</th><th>Rota</th><th>Acesso</th><th>Descrição</th></tr>
+  <tr><td>GET</td><td><code>/</code></td><td>Autenticado</td><td>Página principal (dashboard)</td></tr>
+  <tr><td>GET</td><td><code>/api/estatisticas</code></td><td>Autenticado</td><td>Estatísticas gerais do sistema</td></tr>
+  <tr><td>GET</td><td><code>/api/alertas</code></td><td>Autenticado</td><td>Alertas pendentes (confiança ≥ 50%, não resolvidos)</td></tr>
+  <tr><td>GET</td><td><code>/api/analises</code></td><td>Autenticado</td><td>Últimas 100 análises com detalhes</td></tr>
+  <tr><td>POST</td><td><code>/api/analises/&lt;id&gt;/resolver</code></td><td>Autenticado</td><td>Marcar análise como resolvida</td></tr>
+</table>
+
+<h3>5.3 Comentários</h3>
+<table>
+  <tr><th>Método</th><th>Rota</th><th>Acesso</th><th>Descrição</th></tr>
+  <tr><td>GET</td><td><code>/api/comentarios</code></td><td>Autenticado</td><td>Últimos 100 comentários</td></tr>
+  <tr><td>POST</td><td><code>/api/comentarios</code></td><td>Autenticado</td><td>Adicionar comentário + análise automática</td></tr>
+</table>
+
+<h3>5.4 Deteção</h3>
+<table>
+  <tr><th>Método</th><th>Rota</th><th>Acesso</th><th>Descrição</th></tr>
+  <tr><td>POST</td><td><code>/api/detectar</code></td><td>Autenticado</td><td>Analisar texto (<code>{"texto": "..."}</code>). Guarda na BD.</td></tr>
+</table>
+
+<h3>5.5 Fontes</h3>
+<table>
+  <tr><th>Método</th><th>Rota</th><th>Acesso</th><th>Descrição</th></tr>
+  <tr><td>GET</td><td><code>/api/fontes</code></td><td>Autenticado</td><td>Listar fontes Facebook</td></tr>
+  <tr><td>POST</td><td><code>/api/fontes</code></td><td>Autenticado</td><td>Adicionar fonte</td></tr>
+  <tr><td>DELETE</td><td><code>/api/fontes/&lt;id&gt;</code></td><td>Admin</td><td>Remover fonte</td></tr>
+</table>
+
+<h3>5.6 Dicionário</h3>
+<table>
+  <tr><th>Método</th><th>Rota</th><th>Acesso</th><th>Descrição</th></tr>
+  <tr><td>GET</td><td><code>/api/dicionario</code></td><td>Autenticado</td><td>Listar gírias</td></tr>
+  <tr><td>POST</td><td><code>/api/dicionario</code></td><td>Autenticado</td><td>Adicionar gíria</td></tr>
+  <tr><td>DELETE</td><td><code>/api/dicionario/&lt;id&gt;</code></td><td>Admin</td><td>Remover gíria</td></tr>
+</table>
+
+<h3>5.7 Utilizadores</h3>
+<table>
+  <tr><th>Método</th><th>Rota</th><th>Acesso</th><th>Descrição</th></tr>
+  <tr><td>GET</td><td><code>/api/usuarios</code></td><td>Autenticado</td><td>Listar utilizadores</td></tr>
+  <tr><td>POST</td><td><code>/api/usuarios</code></td><td>Admin</td><td>Criar utilizador</td></tr>
+  <tr><td>DELETE</td><td><code>/api/usuarios/&lt;id&gt;</code></td><td>Admin</td><td>Remover utilizador</td></tr>
+  <tr><td>POST</td><td><code>/api/alterar-senha</code></td><td>Admin</td><td>Alterar senha de outro (<code>{"id", "senha"}</code>)</td></tr>
+  <tr><td>POST</td><td><code>/api/minha-senha</code></td><td>Autenticado</td><td>Alterar própria senha (<code>{"senha"}</code>)</td></tr>
+</table>
+
+<h3>5.8 Utilitários</h3>
+<table>
+  <tr><th>Método</th><th>Rota</th><th>Acesso</th><th>Descrição</th></tr>
+  <tr><td>POST</td><td><code>/api/inicializar</code></td><td>Admin</td><td>Carregar dados iniciais (utilizadores, fontes, gírias)</td></tr>
+  <tr><td>POST</td><td><code>/api/importar-comentarios</code></td><td>Admin</td><td>Importar 10 comentários de teste</td></tr>
+  <tr><td>GET</td><td><code>/api/relatorio</code></td><td>Admin</td><td>Relatório completo agrupado por classificação e fonte</td></tr>
+</table>
+
+<h3>5.9 Exemplo de Análise</h3>
+<pre><code>curl -X POST http://localhost:5000/api/detectar \
+  -H "Content-Type: application/json" \
+  -d '{"texto": "Vou te matar seu idiota"}'</code></pre>
+<p>Resposta:</p>
+<pre><code>{
+  "classificacao": "Crítico",
+  "confianca": 95.0,
+  "girias": [],
+  "palavras": [
+    {"termo": "vou te matar", "nivel": "critico"},
+    {"termo": "idiota", "nivel": "medio"}
+  ],
+  "critico": true,
+  "nivel_geral": "critico"
+}</code></pre>
+
+<hr>
+
+<h2 id="s6">6. Motor de Deteção</h2>
+
+<h3>6.1 Arquitetura</h3>
+<p>O motor (<code>app/detector.py</code>) é um singleton baseado em regras (rule-based), partilhado entre web e desktop. Utiliza:</p>
+<ol>
+  <li><strong>Lista hardcoded (<code>self.pa</code>)</strong>: 181 palavras e expressões ofensivas em português</li>
+  <li><strong>Dicionário local (<code>data/local_dictionary.json</code>)</strong>: termos carregados dinamicamente</li>
+  <li><strong>Gírias da BD (<code>girias_db</code>)</strong>: 40+ gírias regionais da Lunda-Sul</li>
+</ol>
+
+<h3>6.2 Sistema de Pontuação</h3>
+<table>
+  <tr><th>Fator</th><th>Pontos</th></tr>
+  <tr><td>Base (confiança inicial)</td><td>5.0</td></tr>
+  <tr><td>Por palavra/gíria crítica</td><td>+45</td></tr>
+  <tr><td>Por palavra/gíria alta</td><td>+25</td></tr>
+  <tr><td>Por palavra/gíria média</td><td>+15</td></tr>
+  <tr><td>Por palavra/gíria baixa</td><td>+8</td></tr>
+  <tr><td>Bónus crítico (se pelo menos 1 termo crítico detetado)</td><td>+35</td></tr>
+  <tr><td>MAIÚSCULAS (>50% do texto em maiúsculas)</td><td>+10</td></tr>
+  <tr><td>Sinais de exclamação/interrogação</td><td>+2 cada (máx. +10)</td></tr>
+  <tr><td><strong>Máximo</strong></td><td><strong>100</strong></td></tr>
+</table>
+
+<h3>6.3 Thresholds de Classificação</h3>
+<table>
+  <tr><th>Confiança</th><th>Classificação</th><th>Alerta</th></tr>
+  <tr><td>≥ 90%</td><td>🔴 Crítico</td><td>Sim</td></tr>
+  <tr><td>≥ 70%</td><td>🟠 Ofensivo</td><td>Sim</td></tr>
+  <tr><td>≥ 50%</td><td>🟡 Suspeito</td><td>Sim</td></tr>
+  <tr><td>&lt; 50%</td><td>⚪ Neutro</td><td>Não</td></tr>
+</table>
+
+<h3>6.4 Nível de Gravidade</h3>
+<p>O <code>nivel_geral</code> é determinado pelo nível mais alto entre todas as palavras e gírias detetadas:</p>
+<pre><code>critico &gt; alto &gt; medio &gt; baixo &gt; neutro</code></pre>
+
+<hr>
+
+<h2 id="s7">7. Base de Dados</h2>
+
+<h3>7.1 Esquema</h3>
+<p><strong>Ficheiro:</strong> <code>data/cyberbullying.db</code><br>
+<strong>Modo:</strong> WAL (Write-Ahead Logging) para concorrência<br>
+<strong>Timeout:</strong> 10 segundos (múltiplas conexões)</p>
+
+<h4>Tabela <code>usuarios</code></h4>
+<table>
+  <tr><th>Coluna</th><th>Tipo</th><th>Padrão</th><th>Descrição</th></tr>
+  <tr><td><code>id</code></td><td>INTEGER PK</td><td></td><td>Identificador único</td></tr>
+  <tr><td><code>nome</code></td><td>TEXT</td><td></td><td>Nome do utilizador</td></tr>
+  <tr><td><code>email</code></td><td>TEXT</td><td></td><td>Email</td></tr>
+  <tr><td><code>senha</code></td><td>TEXT</td><td>'1234'</td><td>Palavra-passe (plaintext, offline)</td></tr>
+  <tr><td><code>papel</code></td><td>TEXT</td><td></td><td>'admin' ou 'moderador'</td></tr>
+  <tr><td><code>avatar</code></td><td>TEXT</td><td>NULL</td><td>(reservado)</td></tr>
+</table>
+
+<h4>Tabela <code>fontes</code></h4>
+<table>
+  <tr><th>Coluna</th><th>Tipo</th><th>Padrão</th><th>Descrição</th></tr>
+  <tr><td><code>id</code></td><td>INTEGER PK</td><td></td><td>Identificador único</td></tr>
+  <tr><td><code>url</code></td><td>TEXT</td><td></td><td>URL da fonte (ex: grupo Facebook)</td></tr>
+  <tr><td><code>nome</code></td><td>TEXT</td><td></td><td>Nome da fonte</td></tr>
+  <tr><td><code>tipo</code></td><td>TEXT</td><td>'API'</td><td>Tipo de fonte</td></tr>
+  <tr><td><code>ativo</code></td><td>INTEGER</td><td>1</td><td>1=ativo, 0=inativo</td></tr>
+</table>
+
+<h4>Tabela <code>comentarios</code></h4>
+<table>
+  <tr><th>Coluna</th><th>Tipo</th><th>Descrição</th></tr>
+  <tr><td><code>id</code></td><td>INTEGER PK</td><td>Identificador único</td></tr>
+  <tr><td><code>fonte_id</code></td><td>INTEGER FK</td><td>Referência à fonte</td></tr>
+  <tr><td><code>texto</code></td><td>TEXT</td><td>Conteúdo do comentário</td></tr>
+  <tr><td><code>autor</code></td><td>TEXT</td><td>Autor do comentário</td></tr>
+  <tr><td><code>data</code></td><td>TEXT</td><td>Data/hora ISO 8601</td></tr>
+</table>
+
+<h4>Tabela <code>analises</code></h4>
+<table>
+  <tr><th>Coluna</th><th>Tipo</th><th>Padrão</th><th>Descrição</th></tr>
+  <tr><td><code>id</code></td><td>INTEGER PK</td><td></td><td>Identificador único</td></tr>
+  <tr><td><code>comentario_id</code></td><td>INTEGER FK</td><td></td><td>Referência ao comentário</td></tr>
+  <tr><td><code>classificacao</code></td><td>TEXT</td><td></td><td>Crítico/Ofensivo/Suspeito/Neutro</td></tr>
+  <tr><td><code>confianca</code></td><td>REAL</td><td></td><td>Percentagem de confiança (0-100)</td></tr>
+  <tr><td><code>girias</code></td><td>TEXT</td><td></td><td>Gírias detetadas (separadas por vírgula)</td></tr>
+  <tr><td><code>resolvido</code></td><td>INTEGER</td><td>0</td><td>0=pendente, 1=resolvido</td></tr>
+  <tr><td><code>data</code></td><td>TEXT</td><td></td><td>Data/hora ISO 8601</td></tr>
+</table>
+
+<h4>Tabela <code>girias_db</code></h4>
+<table>
+  <tr><th>Coluna</th><th>Tipo</th><th>Padrão</th><th>Descrição</th></tr>
+  <tr><td><code>id</code></td><td>INTEGER PK</td><td></td><td>Identificador único</td></tr>
+  <tr><td><code>termo</code></td><td>TEXT</td><td></td><td>Termo/gíria</td></tr>
+  <tr><td><code>significado</code></td><td>TEXT</td><td></td><td>Significado</td></tr>
+  <tr><td><code>tipo</code></td><td>TEXT</td><td></td><td>'ofensivo' ou 'neutro'</td></tr>
+  <tr><td><code>nivel</code></td><td>TEXT</td><td>'medio'</td><td>Nível de gravidade</td></tr>
+</table>
+
+<h3>7.2 Dados Iniciais (Seed)</h3>
+<p><strong>Utilizadores:</strong></p>
+<table>
+  <tr><th>Nome</th><th>Email</th><th>Senha</th><th>Papel</th></tr>
+  <tr><td>Alberto Baptista</td><td>alberto@saurimo.ao</td><td>240520</td><td>admin</td></tr>
+  <tr><td>Augusta Mulungia</td><td>augusta@saurimo.ao</td><td>1234</td><td>moderador</td></tr>
+  <tr><td>Rafael Mussumari</td><td>rafael@saurimo.ao</td><td>1234</td><td>moderador</td></tr>
+</table>
+<p><strong>Fontes Facebook:</strong> Juventude Saurimo, Lunda-Sul Geral</p>
+<p><strong>Gírias regionais:</strong> 40+ termos nos níveis crítico, alto, médio, baixo e neutro.</p>
+
+<h3>7.3 Migração Automática</h3>
+<p>Na primeira execução, o sistema:</p>
+<ol>
+  <li>Cria as tabelas se não existirem</li>
+  <li>Adiciona coluna <code>senha</code> se estiver em falta</li>
+  <li>Adiciona coluna <code>nivel</code> à tabela <code>girias_db</code> se estiver em falta</li>
+  <li>Atualiza o utilizador admin para "Alberto Baptista" / "240520"</li>
+  <li>Remove duplicados do utilizador admin antigo</li>
+</ol>
+
+<hr>
+
+<h2 id="s8">8. Gestão de Utilizadores e Permissões</h2>
+
+<h3>8.1 Papéis (Roles)</h3>
+<table>
+  <tr><th>Papel</th><th>Acesso</th></tr>
+  <tr><td><code>admin</code></td><td>Todas as funcionalidades, incluindo gestão de utilizadores, relatórios, inicialização</td></tr>
+  <tr><td><code>moderador</code></td><td>Análise, alertas, análises, fontes, dicionário, alterar própria senha</td></tr>
+</table>
+
+<h3>8.2 Controlo de Acesso</h3>
+<p><strong>Web (JavaScript):</strong></p>
+<pre><code>const papel = document.documentElement.dataset.papel || 'moderador';
+if (papel !== 'admin') {
+    document.querySelectorAll('[data-admin]')
+        .forEach(el =&gt; el.style.display = 'none');
+}</code></pre>
+<p><strong>Web (Python decorators):</strong></p>
+<pre><code>def admin_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if session.get('papel') != 'admin':
+            return jsonify({'erro': 'Acesso negado'}), 403
+        return f(*args, **kwargs)
+    return decorated</code></pre>
+<p><strong>Desktop:</strong></p>
+<pre><code>if self.papel == 'admin':
+    self.notebook.add(self.tab_relatorio, text='📄 Relatório')
+    self.notebook.add(self.tab_usuarios, text='👥 Usuários')</code></pre>
+
+<h3>8.3 Segurança</h3>
+<ul>
+  <li><strong>Offline-first</strong>: o sistema funciona 100% offline (localhost)</li>
+  <li><strong>Passwords em plaintext</strong>: aceitável para âmbito académico 100% offline</li>
+  <li><strong>Servidor web</strong>: bind a <code>0.0.0.0:5000</code> — acessível apenas na rede local</li>
+  <li><strong>Chave secreta</strong>: hardcoded (<code>SECRET_KEY</code>) — adequado para ambiente controlado</li>
+</ul>
+
+<hr>
+
+<h2 id="s9">9. Empacotamento (EXE)</h2>
+
+<h3>9.1 Construir o Executável</h3>
+<pre><code>cd offline
+py -m PyInstaller --onefile --windowed --name CyberbullyingDetector ^
+  --add-data "..\app;app" ^
+  --add-data "logo.png;." ^
+  --add-data "..\data\local_dictionary.json;data" ^
+  desktop_app.py</code></pre>
+
+<h3>9.2 Ficheiro .spec (alternativa)</h3>
+<pre><code>py -m PyInstaller CyberbullyingDetector.spec</code></pre>
+
+<h3>9.3 Hidden Imports Necessários</h3>
+<p>Incluídos automaticamente no <code>.spec</code>:</p>
+<ul>
+  <li><code>flask</code>, <code>flask_cors</code>, <code>flask_sqlalchemy</code></li>
+  <li><code>sqlite3</code>, <code>json</code>, <code>threading</code>, <code>logging</code></li>
+  <li><code>tkinter</code>, <code>tkinter.ttk</code>, <code>tkinter.messagebox</code>, <code>tkinter.filedialog</code></li>
+  <li><code>datetime</code>, <code>os</code>, <code>sys</code>, <code>re</code>, <code>time</code></li>
+</ul>
+
+<h3>9.4 Executável Compilado</h3>
+<p><strong>Localização:</strong> <code>offline/dist/CyberbullyingDetector.exe</code></p>
+<p>Após execução, cria:</p>
+<ul>
+  <li><code>offline/dist/data/cyberbullying.db</code> — base de dados</li>
+  <li><code>offline/dist/data/debug.log</code> — log de diagnóstico</li>
+  <li>Servidor web em <a href="http://localhost:5000" target="_blank">http://localhost:5000</a></li>
+</ul>
+
+<hr>
+
+<h2 id="s10">10. Manutenção e Resolução de Problemas</h2>
+
+<h3>10.1 Log de Diagnóstico</h3>
+<p>O sistema escreve para <code>data/debug.log</code> (ou <code>offline/dist/data/debug.log</code> no EXE):</p>
+<ul>
+  <li>Estado da BD antes/depois da migração</li>
+  <li>Tentativas de login (utilizador, senha, resultado)</li>
+  <li>Erros de conexão à BD</li>
+  <li>Diagnóstico automático ao iniciar</li>
+</ul>
+
+<h3>10.2 Problemas Comuns</h3>
+<table>
+  <tr><th>Problema</th><th>Causa Provável</th><th>Solução</th></tr>
+  <tr><td>"Usuário ou senha inválidos"</td><td>BD corrompida ou migração incompleta</td><td>Apagar <code>data/cyberbullying.db</code> e reiniciar</td></tr>
+  <tr><td>"Database is locked"</td><td>Concorrência entre web e desktop</td><td>Aguardar ou reiniciar. WAL mode + timeout 10s</td></tr>
+  <tr><td>Servidor web não inicia no desktop</td><td>Porta 5000 ocupada</td><td>Fechar outras instâncias do Flask</td></tr>
+  <tr><td>EXE não abre</td><td>PyInstaller sem hidden imports</td><td>Recompilar com <code>.spec</code> atualizado</td></tr>
+  <tr><td>Login falha após logout (desktop)</td><td>Thread do web server ainda ativa</td><td>Fechar completamente o EXE e reabrir</td></tr>
+</table>
+
+<h3>10.3 Reset Completo</h3>
+<p>Para reiniciar o sistema do zero:</p>
+<pre><code>rem Apagar base de dados
+del data\cyberbullying.db
+rem ou (se usar EXE)
+del offline\dist\data\cyberbullying.db
+
+rem Apagar log
+del data\debug.log
+
+rem Reiniciar
+python run.py
+rem ou
+offline\dist\CyberbullyingDetector.exe</code></pre>
+<p>Na primeira execução, o sistema recria a BD e insere os dados iniciais.</p>
+
+<h3>10.4 Verificação de Integridade</h3>
+<p>No desktop, o diagnóstico automático corre ao iniciar (<code>_diagnose_db()</code>) e regista:</p>
+<ul>
+  <li>Caminho da BD</li>
+  <li>Se o ficheiro existe</li>
+  <li>Número de análises, comentários e alertas</li>
+  <li>Últimas 5 análises</li>
+</ul>
+
+<hr>
+
+<h2 id="s11">11. Credenciais</h2>
+<table>
+  <tr><th>Sistema</th><th>Utilizador</th><th>Senha</th><th>Papel</th></tr>
+  <tr><td>Admin</td><td>Alberto Baptista</td><td>240520</td><td>admin</td></tr>
+  <tr><td>Moderador</td><td>Augusta Mulungia</td><td>1234</td><td>moderador</td></tr>
+  <tr><td>Moderador</td><td>Rafael Mussumari</td><td>1234</td><td>moderador</td></tr>
+</table>
+
+<hr>
+
+<h2 id="s12">12. Equipa de Desenvolvimento</h2>
+<p><strong>Disciplina:</strong> PP1 — Engenharia de Software I + Sistemas Operacionais</p>
+<table>
+  <tr><th>Membro</th><th>Papel no Projeto</th></tr>
+  <tr><td>Alberto Baptista</td><td>Desenvolvedor principal</td></tr>
+  <tr><td>Augusta Mulungia</td><td>Documentação e testes</td></tr>
+  <tr><td>Rafael Mussumari</td><td>Interface e validação</td></tr>
+</table>
+<p><strong>Instituição:</strong> Instituto Superior Politécnico da Lunda-Sul (IPLS)<br>
+<strong>Localização:</strong> Saurimo, Angola<br>
+<strong>Ano Letivo:</strong> 2026</p>
+
+<hr>
+<p style="text-align:center; color:#6b7280; font-size:0.85rem;">
+  <em>Documentação gerada em Junho de 2026. Para mais informações, contactar a equipa de desenvolvimento.</em>
+</p>
+
+</body>
+</html>

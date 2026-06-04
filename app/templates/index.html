@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="pt" data-papel="{{ session.get('papel', 'moderador') }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyberbullying Detector - Saurimo</title>
+    <link rel="icon" href="{{ url_for('static', filename='logo.png') }}" type="image/png">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-inner">
+            <div class="nav-brand">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="nav-logo">
+                <div>
+                    <h1>Cyberbullying Detector</h1>
+                    <span class="subtitle">Saurimo, Angola • 2026</span>
+                </div>
+            </div>
+            <button class="nav-toggle" onclick="toggleSidebar()">☰</button>
+            <a href="/logout" class="nav-logout" title="Terminar sessão">🚪 Sair</a>
+        </div>
+    </nav>
+
+    <div class="layout">
+        <aside class="sidebar" id="sidebar">
+            <button class="menu-btn active" data-page="analise" onclick="mostrarPagina('analise')">
+                <span class="menu-icon">🔍</span> Análise
+            </button>
+            <button class="menu-btn" data-page="alertas" onclick="mostrarPagina('alertas')">
+                <span class="menu-icon">🚨</span> Alertas
+                <span class="menu-badge" id="badge-alertas" style="display:none">0</span>
+            </button>
+            <button class="menu-btn" data-page="analises" onclick="mostrarPagina('analises')">
+                <span class="menu-icon">📊</span> Análises
+            </button>
+            <button class="menu-btn" data-page="fontes" onclick="mostrarPagina('fontes')">
+                <span class="menu-icon">📰</span> Fontes
+            </button>
+            <button class="menu-btn" data-page="dicionario" onclick="mostrarPagina('dicionario')">
+                <span class="menu-icon">📚</span> Dicionário
+            </button>
+            <button class="menu-btn" data-page="usuarios" data-admin="1" onclick="mostrarPagina('usuarios')">
+                <span class="menu-icon">👥</span> Usuários
+            </button>
+            <button class="menu-btn" data-page="relatorio" data-admin="1" onclick="mostrarPagina('relatorio')">
+                <span class="menu-icon">📄</span> Relatório
+            </button>
+            <div class="menu-divider"></div>
+            <button class="menu-btn menu-action" data-admin="1" onclick="inicializarDados()">
+                ⚙️ Inicializar
+            </button>
+            <button class="menu-btn menu-action" data-admin="1" onclick="importarComentarios()">
+                📥 Importar Testes
+            </button>
+            <button class="menu-btn menu-action" onclick="carregarTudo()">
+                🔄 Atualizar
+            </button>
+            <div class="menu-divider"></div>
+            <button class="menu-btn menu-action" onclick="minhaSenha()">
+                🔑 Minha Senha
+            </button>
+        </aside>
+
+        <main class="content" id="main-content">
+            <div class="stats-grid" id="page-stats">
+                <div class="stat-card"><h3>Comentários</h3><p id="total-comentarios">0</p></div>
+                <div class="stat-card"><h3>Analisados</h3><p id="total-analisados">0</p></div>
+                <div class="stat-card critical"><h3>Ofensivos+</h3><p id="casos-criticos">0</p></div>
+                <div class="stat-card"><h3>Taxa</h3><p id="taxa-deteccao">0%</p></div>
+            </div>
+
+            <div id="page-analise" class="page active">
+                <section class="section">
+                    <h2>🔍 Análise Rápida</h2>
+                    <div class="analyzer-form">
+                        <textarea id="texto-analise" placeholder="Digite o texto para análise..."></textarea>
+                        <button onclick="analisarTexto()">Analisar</button>
+                    </div>
+                    <div id="resultado-analise" class="resultado-box" style="display:none;"></div>
+                </section>
+            </div>
+
+            <div id="page-alertas" class="page">
+                <section class="section">
+                    <h2>🚨 Alertas (confiança ≥ 50%)</h2>
+                    <div id="alertas-lista" class="alertas-container"><p class="empty-message">Nenhum alerta pendente</p></div>
+                </section>
+            </div>
+
+            <div id="page-analises" class="page">
+                <section class="section">
+                    <h2>📊 Últimas Análises</h2>
+                    <div class="table-container">
+                        <table id="analises-table">
+                            <thead><tr>
+                                <th>Data</th><th>Autor</th><th>Texto</th>
+                                <th>Classificação</th><th>Confiança</th><th>Gírias</th><th>Nível</th><th>Ação</th>
+                            </tr></thead>
+                            <tbody id="analises-body"></tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+
+            <div id="page-fontes" class="page">
+                <section class="section">
+                    <h2>📰 Fontes Facebook</h2>
+                    <div class="form-row">
+                        <input type="text" id="nova-url" placeholder="URL da página/grupo">
+                        <input type="text" id="novo-nome" placeholder="Nome do grupo">
+                        <button onclick="adicionarFonte()">Adicionar Fonte</button>
+                    </div>
+                    <div id="fontes-lista" class="fontes-container"></div>
+                </section>
+            </div>
+
+            <div id="page-dicionario" class="page">
+                <section class="section">
+                    <h2>📚 Dicionário Local de Gírias</h2>
+                    <div class="form-row">
+                        <input type="text" id="nova-giria" placeholder="Nova gíria">
+                        <input type="text" id="significado-giria" placeholder="Significado">
+                        <select id="tipo-giria">
+                            <option value="ofensivo">Ofensivo</option>
+                            <option value="neutro">Neutro</option>
+                        </select>
+                        <select id="nivel-giria">
+                            <option value="critico">Crítico</option>
+                            <option value="alto">Alto</option>
+                            <option value="medio" selected>Médio</option>
+                            <option value="baixo">Baixo</option>
+                            <option value="neutro">Neutro</option>
+                        </select>
+                        <button onclick="adicionarGiria()">Adicionar</button>
+                    </div>
+                    <div id="dicionario-lista" class="dicionario-container"></div>
+                </section>
+            </div>
+
+            <div id="page-usuarios" class="page">
+                <section class="section">
+                    <h2>👥 Usuários do Sistema</h2>
+                    <div class="form-row">
+                        <input type="text" id="novo-usuario-nome" placeholder="Nome completo">
+                        <input type="email" id="novo-usuario-email" placeholder="Email">
+                        <input type="password" id="novo-usuario-senha" placeholder="Senha" value="1234">
+                        <select id="novo-usuario-papel">
+                            <option value="moderador">Moderador</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                        <button onclick="adicionarUsuario()">➕ Novo Usuário</button>
+                    </div>
+                    <div id="usuarios-lista" class="usuarios-container"></div>
+                </section>
+            </div>
+
+            <div id="page-relatorio" class="page">
+                <section class="section">
+                    <h2>📄 Relatório Geral</h2>
+                    <button onclick="gerarRelatorio()">Gerar Relatório</button>
+                    <div id="relatorio-resultado"></div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>document.documentElement.dataset.papel = '{{ session.get("papel", "moderador") }}';</script>
+</body>
+</html>

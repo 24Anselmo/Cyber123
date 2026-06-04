@@ -1,0 +1,308 @@
+{
+  "mucolesse sonhi curi atxu essue": {
+    "significado": "Vai embora daqui (expressão rude em dialeto local)",
+    "contexto": "Conflitos entre jovens em Saurimo",
+    "nivel": "critico",
+    "ofensivo": true
+  },
+  "cucaujola": {
+    "significado": "Pessoa sem valor, inútil",
+    "contexto": "Insulto comum entre jovens angolanos",
+    "nivel": "alto",
+    "ofensivo": true
+  },
+  "cutxuala-phula": {
+    "significado": "Expressão depreciativa grave",
+    "contexto": "Usada para humilhar alguém publicamente",
+    "nivel": "alto",
+    "ofensivo": true
+  },
+  "kamba di kanimbo": {
+    "significado": "Amigo traidor, falso",
+    "contexto": "Acusação de traição entre conhecidos",
+    "nivel": "medio",
+    "ofensivo": true
+  },
+  "kizua": {
+    "significado": "Mentiroso, enganador",
+    "contexto": "Acusação de mentira ou falsidade",
+    "nivel": "medio",
+    "ofensivo": true
+  },
+  "canhota": {
+    "significado": "Pessoa de má índole, mal vista",
+    "contexto": "Termo pejorativo local para alguém desonesto",
+    "nivel": "medio",
+    "ofensivo": true
+  },
+  "mujimbista": {
+    "significado": "Pessoa que espalha boatos, fofoqueiro",
+    "contexto": "Usado de forma depreciativa no contexto político-social",
+    "nivel": "medio",
+    "ofensivo": true
+  },
+  "mukua": {
+    "significado": "Pessoa ignorante, sem educação",
+    "contexto": "Insulto referente a falta de conhecimento",
+    "nivel": "alto",
+    "ofensivo": true
+  },
+  "txiwela": {
+    "significado": "Pessoa fraca, medrosa",
+    "contexto": "Usado para ridicularizar alguém",
+    "nivel": "baixo",
+    "ofensivo": true
+  },
+  "ngana": {
+    "significado": "Termo de tratamento (pode ser usado de forma irônica)",
+    "contexto": "Depende do tom, pode ser respeitoso ou sarcástico",
+    "nivel": "baixo",
+    "ofensivo": false
+  },
+  "sota": {
+    "significado": "Amigo próximo, parceiro",
+    "contexto": "Termo neutro de camaradagem",
+    "nivel": "neutro",
+    "ofensivo": false
+  },
+  "bassula": {
+    "significado": "Conversar, bater papo",
+    "contexto": "Termo neutro do calão angolano",
+    "nivel": "neutro",
+    "ofensivo": false
+  },
+  "kamba": {
+    "significado": "Amigo, camarada",
+    "contexto": "Saudação amigável entre jovens",
+    "nivel": "neutro",
+    "ofensivo": false
+  },
+  "mbamba": {
+    "significado": "Amigo verdadeiro",
+    "contexto": "Termo de amizade genuína",
+    "nivel": "neutro",
+    "ofensivo": false
+  },
+  "kota": {
+    "significado": "Mais velho, sênior (respeitoso)",
+    "contexto": "Termo de respeito por ancião ou superior",
+    "nivel": "neutro",
+    "ofensivo": false
+  },
+  "kwanza": {
+    "significado": "Dinheiro, moeda nacional",
+    "contexto": "Referência neutra a dinheiro",
+    "nivel": "neutro",
+    "ofensivo": false
+  },
+  "mutu": {
+    "significado": "Pessoa, indivíduo",
+    "contexto": "Termo neutro para designar alguém",
+    "nivel": "neutro",
+    "ofensivo": false
+  },
+  "tchilar": {
+    "significado": "Relaxar, descontrair",
+    "contexto": "Convite para descansar ou se divertir",
+    "nivel": "neutro",
+    "ofensivo": false
+  },
+  "bumbar": {
+    "significado": "Trabalhar, fazer algo",
+    "contexto": "Termo neutro do quotidiano angolano",
+    "nivel": "neutro",
+    "ofensivo": false
+  },
+  "cumbar": {
+    "significado": "Acompanhar, andar junto",
+    "contexto": "Convite neutro para acompanhar",
+    "nivel": "neutro",
+    "ofensivo": false
+  },
+  "quibuca": {
+    "significado": "Pessoa que não cumpre promessas",
+    "contexto": "Advertência sobre falta de palavra",
+    "nivel": "baixo",
+    "ofensivo": true
+  },
+  "kibukula": {
+    "significado": "Pessoa que fala demais, indiscreta",
+    "contexto": "Crítica a alguém que não guarda segredos",
+    "nivel": "baixo",
+    "ofensivo": true
+  },
+  "mulemba": {
+    "significado": "Sombra (pode ser usado como ofensa racial)",
+    "contexto": "Contexto racial, altamente ofensivo em certos usos",
+    "nivel": "critico",
+    "ofensivo": true
+  },
+  "muxiluanda": {
+    "significado": "Pessoa de Luanda (pode ser usado de forma depreciativa)",
+    "contexto": "Regionalismo pejorativo entre províncias",
+    "nivel": "baixo",
+    "ofensivo": true
+  },
+  "xiyowa": {
+    "significado": "Pessoa ingénua, tola",
+    "contexto": "Usado para menosprezar a inteligência",
+    "nivel": "medio",
+    "ofensivo": true
+  },
+  "cangundo": {
+    "significado": "Pessoa desajeitada, sem coordenação",
+    "contexto": "Ridicularização de habilidades físicas",
+    "nivel": "baixo",
+    "ofensivo": true
+  },
+  "majimbo": {
+    "significado": "Problema, confusão",
+    "contexto": "Referência a situação problemática",
+    "nivel": "neutro",
+    "ofensivo": false
+  },
+  "baião": {
+    "significado": "Dança tradicional angolana",
+    "contexto": "Referência cultural neutra",
+    "nivel": "neutro",
+    "ofensivo": false
+  },
+  "muamba": {
+    "significado": "Comida tradicional angolana",
+    "contexto": "Referência culinária neutra",
+    "nivel": "neutro",
+    "ofensivo": false
+  },
+  "buzi": {
+    "significado": "Cabra (pode ser usado como ofensa comparativa)",
+    "contexto": "Comparação animal para humilhar",
+    "nivel": "medio",
+    "ofensivo": true
+  },
+  "ngoma": {
+    "significado": "Tambor, festa tradicional",
+    "contexto": "Referência cultural neutra",
+    "nivel": "neutro",
+    "ofensivo": false
+  },
+  "cacimbo": {
+    "significado": "Nevoeiro, estação seca",
+    "contexto": "Termo meteorológico neutro",
+    "nivel": "neutro",
+    "ofensivo": false
+  },
+  "jinguba": {
+    "significado": "Amendoim",
+    "contexto": "Termo alimentar neutro",
+    "nivel": "neutro",
+    "ofensivo": false
+  },
+  "funge": {
+    "significado": "Comida típica angolana",
+    "contexto": "Referência culinária neutra",
+    "nivel": "neutro",
+    "ofensivo": false
+  },
+  "calulu": {
+    "significado": "Prato típico de peixe",
+    "contexto": "Referência culinária neutra",
+    "nivel": "neutro",
+    "ofensivo": false
+  },
+  "mufete": {
+    "significado": "Peixe assado típico",
+    "contexto": "Referência culinária neutra",
+    "nivel": "neutro",
+    "ofensivo": false
+  },
+  "kilapanga": {
+    "significado": "Pessoa que gosta de confusão",
+    "contexto": "Crítica a comportamento problemático",
+    "nivel": "medio",
+    "ofensivo": true
+  },
+  "kisungu": {
+    "significado": "Branco, estrangeiro (pode ser pejorativo)",
+    "contexto": "Pode ser ofensivo dependendo do contexto",
+    "nivel": "baixo",
+    "ofensivo": true
+  },
+  "muxima": {
+    "significado": "Coração, pessoa querida",
+    "contexto": "Termo afetivo neutro",
+    "nivel": "neutro",
+    "ofensivo": false
+  },
+  "nzambi": {
+    "significado": "Deus",
+    "contexto": "Referência religiosa neutra",
+    "nivel": "neutro",
+    "ofensivo": false
+  },
+  "quinda": {
+    "significado": "Cesto (pode ser usado como ofensa sobre aparência)",
+    "contexto": "Uso pejorativo referente a cabelo ou aparência",
+    "nivel": "alto",
+    "ofensivo": true
+  },
+  "kamba dia bunda": {
+    "significado": "Expressão de desprezo",
+    "contexto": "Insulto grave no calão angolano",
+    "nivel": "critico",
+    "ofensivo": true
+  },
+  "mbua": {
+    "significado": "Cão (usado como ofensa grave)",
+    "contexto": "Comparação animal altamente ofensiva",
+    "nivel": "critico",
+    "ofensivo": true
+  },
+  "ngulu": {
+    "significado": "Porco (usado como ofensa)",
+    "contexto": "Comparação animal ofensiva",
+    "nivel": "alto",
+    "ofensivo": true
+  },
+  "mussua": {
+    "significado": "Pessoa suja, mal cuidada",
+    "contexto": "Crítica a higiene ou aparência",
+    "nivel": "baixo",
+    "ofensivo": true
+  },
+  "paxi": {
+    "significado": "Pax, paz, trégua",
+    "contexto": "Pedido de pacificação",
+    "nivel": "neutro",
+    "ofensivo": false
+  },
+  "vamba": {
+    "significado": "Andar, passear",
+    "contexto": "Convite neutro para sair",
+    "nivel": "neutro",
+    "ofensivo": false
+  },
+  "mwangana": {
+    "significado": "Rei, chefe tradicional",
+    "contexto": "Título de respeito",
+    "nivel": "neutro",
+    "ofensivo": false
+  },
+  "sukuata": {
+    "significado": "Calar-se (forma rude)",
+    "contexto": "Ordem para silêncio em tom agressivo",
+    "nivel": "alto",
+    "ofensivo": true
+  },
+  "tunda": {
+    "significado": "Sair daqui (expressão de expulsão)",
+    "contexto": "Ordem agressiva para alguém se retirar",
+    "nivel": "alto",
+    "ofensivo": true
+  },
+  "mbuji": {
+    "significado": "Bode (comparação pejorativa)",
+    "contexto": "Usado para humilhar homem",
+    "nivel": "alto",
+    "ofensivo": true
+  }
+}

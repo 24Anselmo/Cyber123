@@ -1,0 +1,656 @@
+# 🛡️ Sistema de Deteção de Cyberbullying — Documentação Técnica
+
+**Instituto Superior Politécnico da Lunda-Sul — Saurimo, Angola**  
+**PP1 — Engenharia de Software I + Sistemas Operacionais | 2026**
+
+---
+
+## Índice
+
+1. [Visão Geral](#1-visão-geral)
+2. [Arquitetura do Sistema](#2-arquitetura-do-sistema)
+3. [Instalação e Configuração](#3-instalação-e-configuração)
+4. [Guia de Utilização](#4-guia-de-utilização)
+5. [API REST](#5-api-rest)
+6. [Motor de Deteção](#6-motor-de-deteção)
+7. [Base de Dados](#7-base-de-dados)
+8. [Gestão de Utilizadores e Permissões](#8-gestão-de-utilizadores-e-permissões)
+9. [Empacotamento (EXE)](#9-empacotamento-exe)
+10. [Manutenção e Resolução de Problemas](#10-manutenção-e-resolução-de-problemas)
+11. [Credenciais](#11-credenciais)
+12. [Equipa de Desenvolvimento](#12-equipa-de-desenvolvimento)
+
+---
+
+## 1. Visão Geral
+
+Sistema multiplataforma para deteção de cyberbullying em texto, desenvolvido para o Instituto Superior Politécnico da Lunda-Sul (Saurimo, Angola). Combina uma interface **web** (Flask) e uma aplicação **desktop** (Tkinter) que partilham a mesma base de dados SQLite e o mesmo motor de deteção enriquecido.
+
+### 1.1 Funcionalidades Principais
+
+| Funcionalidade | Descrição |
+|---|---|
+| Análise de texto em tempo real | Classifica como Crítico / Ofensivo / Suspeito / Neutro |
+| Dicionário alargado | 181+ palavras ofensivas + 40+ gírias regionais angolanas |
+| Classificação por níveis | crítico, alto, médio, baixo, neutro |
+| Alertas inteligentes | Threshold ≥ 50% de confiança (Suspeito+) |
+| Interface web e desktop | Mesma BD partilhada, mesma experiência |
+| Servidor web embutido | Desktop inicia Flask automaticamente após login |
+| Autenticação | Login protegido em ambos os sistemas |
+| Controlo de acesso | Papéis: admin e moderador |
+| Auto-save | Toda análise é guardada automaticamente na BD |
+| Exportação de relatórios | CSV e TXT |
+| Report ao Facebook | Cópia do alerta para área de transferência |
+
+### 1.2 Tecnologias
+
+| Componente | Tecnologia |
+|---|---|
+| Servidor web | Flask 3.0 (Python) |
+| ORM | SQLAlchemy + SQLite |
+| Frontend | HTML5, CSS3, JavaScript (vanilla) |
+| Interface desktop | Tkinter (Python) |
+| Motor de deteção | Rule-based (dicionário + pesos) |
+| CORS | Flask-CORS |
+| Empacotamento | PyInstaller (executável Windows) |
+| Base de dados | SQLite 3 (WAL mode) |
+
+---
+
+## 2. Arquitetura do Sistema
+
+### 2.1 Estrutura de Diretórios
+
+```
+cyberbullying_detector/
+├── app/                                # Aplicação Web (Flask)
+│   ├── __init__.py                     # Factory, BD, CORS, migração
+│   ├── models.py                       # Modelos SQLAlchemy
+│   ├── routes.py                       # 24 endpoints REST + login
+│   ├── detector.py                     # Motor de deteção (singleton)
+│   ├── static/
+│   │   ├── css/style.css               # Estilos responsivos
+│   │   ├── js/main.js                  # Lógica frontend completa
+│   │   └── logo.png                    # Logótipo
+│   └── templates/
+│       ├── index.html                  # Dashboard principal
+│       └── login.html                  # Página de autenticação
+├── offline/                            # Aplicação Desktop
+│   ├── desktop_app.py                  # UI Tkinter + servidor web embutido
+│   ├── logo.png                        # Logótipo desktop
+│   ├── iniciar.bat                     # Atalho de execução
+│   ├── CyberbullyingDetector.spec      # Configuração PyInstaller
+│   └── dist/
+│       └── CyberbullyingDetector.exe   # Executável compilado
+├── data/                               # Dados persistentes
+│   ├── cyberbullying.db                # Base de dados SQLite
+│   ├── local_dictionary.json           # Dicionário local (fallback)
+│   └── debug.log                       # Log de diagnóstico
+├── DOCUMENTACAO.md                     # Este documento
+├── README.md                           # Manual rápido
+├── requirements.txt                    # Dependências Python
+└── run.py                              # Ponto de entrada web
+```
+
+### 2.2 Fluxo de Funcionamento
+
+```
+                    ┌─────────────────────────┐
+                    │   Base de Dados SQLite    │
+                    │   data/cyberbullying.db   │
+                    └──────────┬──────────────┘
+                               │
+              ┌────────────────┼────────────────┐
+              │                │                │
+              ▼                ▼                ▼
+       ┌──────────┐    ┌──────────────┐    ┌──────────┐
+       │  Desktop  │    │  Servidor    │    │  Web     │
+       │ (Tkinter) │◄──►│  Web Flask   │◄──►│ (Browser)│
+       │  .exe     │    │  (embutido)  │    │localhost │
+       └──────────┘    └──────────────┘    │ :5000    │
+                                            └──────────┘
+```
+
+- Desktop e Web partilham o mesmo ficheiro `cyberbullying.db`
+- Desktop inicia servidor web Flask automaticamente como thread daemon
+- Motor de deteção (`app/detector.py`) é o mesmo para ambas as interfaces
+- Toda a análise é auto-salva na BD antes de ser exibida
+
+### 2.3 Autenticação e Sessão
+
+- **Web**: sessão Flask armazenada em cookie assinado (`secret_key`)
+- **Desktop**: login verificado localmente via SQLite; `user_id`, `nome` e `papel` passados ao construtor da app
+- **Logout** (web): `session.clear()` + redirect para `/login`
+- **Logout** (desktop): `root.destroy()` + `main()` (re-inicia ciclo de login)
+- **Timeout**: as sessões web não expiram automaticamente (apenas ao fechar o browser ou clicar Sair)
+
+---
+
+## 3. Instalação e Configuração
+
+### 3.1 Requisitos
+
+- Windows 10/11 ou Linux (Ubuntu 22.04+)
+- Python 3.10 ou superior
+- pip (gestor de pacotes Python)
+
+### 3.2 Instalação de Dependências
+
+```bash
+cd cyberbullying_detector
+pip install -r requirements.txt
+```
+
+Conteúdo do `requirements.txt`:
+```
+flask>=3.0
+flask-sqlalchemy>=3.0
+flask-cors>=4.0
+```
+
+### 3.3 Execução
+
+#### Modo Web (Servidor Flask Autónomo)
+
+```bash
+python run.py
+```
+
+Acessar: http://localhost:5000
+
+O `run.py` verifica automaticamente se existe uma base de dados em `offline/dist/data/cyberbullying.db` (criada pelo EXE). Se existir, utiliza essa para manter consistência.
+
+#### Modo Desktop (Tkinter + Servidor Web Embutido)
+
+```bash
+cd offline
+python desktop_app.py
+```
+
+Ou clicar duas vezes em `iniciar.bat`.
+
+Após login, o servidor web é iniciado automaticamente em http://localhost:5000.
+
+#### Executável Compilado
+
+```bash
+offline/dist/CyberbullyingDetector.exe
+```
+
+### 3.4 Configuração
+
+| Variável de Ambiente | Descrição | Padrão |
+|---|---|---|
+| `CYBERBULLYING_DB_PATH` | Caminho completo para a BD SQLite | `data/cyberbullying.db` |
+
+Se a variável não for definida, o caminho é calculado automaticamente:
+- **Script**: diretório raiz do projeto + `/data/cyberbullying.db`
+- **EXE**: diretório do executável + `/data/cyberbullying.db`
+
+---
+
+## 4. Guia de Utilização
+
+### 4.1 Interface Web
+
+Acesso: http://localhost:5000
+
+**Barra lateral (sidebar):**
+
+| Botão | Visível para | Descrição |
+|---|---|---|
+| 🔍 Análise | Todos | Inserir texto e classificar |
+| 🚨 Alertas | Todos | Alertas pendentes (≥ 50% confiança) |
+| 📊 Análises | Todos | Histórico de análises |
+| 📰 Fontes | Todos | Gerir fontes Facebook |
+| 📚 Dicionário | Todos | Gerir gírias locais |
+| 👥 Usuários | Admin | Gerir utilizadores |
+| 📄 Relatório | Admin | Estatísticas e exportação |
+| ⚙️ Inicializar | Admin | Carregar dados iniciais |
+| 📥 Importar Testes | Admin | Importar 10 comentários de teste |
+| 🔄 Atualizar | Todos | Atualizar todos os dados |
+| 🔑 Minha Senha | Todos | Alterar própria senha |
+| 🚪 Sair | Todos | Terminar sessão |
+
+**Página de Análise:**
+1. Digite o texto na caixa de texto
+2. Clique "🔍 Analisar" ou pressione `Ctrl+Enter`
+3. Veja a classificação, confiança, palavras e gírias detetadas
+
+**Página de Alertas:**
+- Lista comentários com confiança ≥ 50% ainda não resolvidos
+- Botão ✅ para resolver (marcar como revisto)
+- Botão 📢 para copiar alerta para área de transferência
+
+### 4.2 Interface Desktop
+
+**Abas disponíveis (admin):**
+
+| Aba | Descrição |
+|---|---|
+| 🔍 Análise | Analisar texto com resultado detalhado |
+| 🚨 Alertas | Alertas pendentes com auto-refresh (5s) |
+| 📚 Dicionário | Gerir gírias e níveis |
+| 📰 Fontes | Gerir fontes Facebook |
+| 📄 Relatório | Estatísticas e exportação CSV/TXT |
+| 👥 Usuários | Gerir equipa (admin apenas) |
+
+**Abas disponíveis (moderador):** Todas exceto Relatório e Usuários.
+
+**Barra de status (inferior):**
+- 🔑 Alterar Senha — alterar a própria senha
+- 🌐 Web: localhost:5000 — clique para abrir navegador
+- 🚪 Sair — terminar sessão
+
+**Atalhos de teclado:**
+- `Ctrl+Enter` — analisar texto rapidamente
+
+### 4.3 Gestão de Utilizadores (Admin)
+
+**Criar utilizador:**
+1. Aba Usuários → botão "➕ Novo Usuário"
+2. Preencher Nome, Email, Senha, Papel (admin/moderador)
+3. Clicar "💾 Salvar"
+
+**Alterar senha de outro utilizador:**
+1. Aba Usuários → selecionar utilizador na lista
+2. Clicar "🔑 Alterar Senha"
+3. Escolher novo utilizador e nova senha
+
+**Alterar própria senha:**
+- Web: sidebar → "🔑 Minha Senha"
+- Desktop: barra de status → "👤 Alterar Senha"
+
+**Remover utilizador:**
+1. Aba Usuários → selecionar utilizador
+2. Clicar "🗑️ Remover"
+
+---
+
+## 5. API REST
+
+Todas as rotas (exceto `/login` e `/logout`) requerem autenticação por sessão. Retornam `401 Unauthorized` se não autenticado. Rotas marcadas como **Admin** requerem `papel='admin'`.
+
+### 5.1 Autenticação
+
+| Método | Rota | Acesso | Descrição |
+|---|---|---|---|
+| GET | `/login` | Público | Página de login |
+| POST | `/login` | Público | Autenticar (`username`, `password`) |
+| GET | `/logout` | Público | Terminar sessão |
+
+### 5.2 Dashboard e Estatísticas
+
+| Método | Rota | Acesso | Descrição |
+|---|---|---|---|
+| GET | `/` | Autenticado | Página principal (dashboard) |
+| GET | `/api/estatisticas` | Autenticado | Estatísticas gerais do sistema |
+| GET | `/api/alertas` | Autenticado | Alertas pendentes (confiança ≥ 50%, não resolvidos) |
+| GET | `/api/analises` | Autenticado | Últimas 100 análises com detalhes |
+| POST | `/api/analises/<id>/resolver` | Autenticado | Marcar análise como resolvida |
+
+### 5.3 Comentários
+
+| Método | Rota | Acesso | Descrição |
+|---|---|---|---|
+| GET | `/api/comentarios` | Autenticado | Últimos 100 comentários |
+| POST | `/api/comentarios` | Autenticado | Adicionar comentário + análise automática |
+
+### 5.4 Deteção
+
+| Método | Rota | Acesso | Descrição |
+|---|---|---|---|
+| POST | `/api/detectar` | Autenticado | Analisar texto (`{"texto": "..."}`). Guarda na BD. |
+
+### 5.5 Fontes
+
+| Método | Rota | Acesso | Descrição |
+|---|---|---|---|
+| GET | `/api/fontes` | Autenticado | Listar fontes Facebook |
+| POST | `/api/fontes` | Autenticado | Adicionar fonte |
+| DELETE | `/api/fontes/<id>` | Admin | Remover fonte |
+
+### 5.6 Dicionário
+
+| Método | Rota | Acesso | Descrição |
+|---|---|---|---|
+| GET | `/api/dicionario` | Autenticado | Listar gírias |
+| POST | `/api/dicionario` | Autenticado | Adicionar gíria |
+| DELETE | `/api/dicionario/<id>` | Admin | Remover gíria |
+
+### 5.7 Utilizadores
+
+| Método | Rota | Acesso | Descrição |
+|---|---|---|---|
+| GET | `/api/usuarios` | Autenticado | Listar utilizadores |
+| POST | `/api/usuarios` | Admin | Criar utilizador |
+| DELETE | `/api/usuarios/<id>` | Admin | Remover utilizador |
+| POST | `/api/alterar-senha` | Admin | Alterar senha de outro (`{"id", "senha"}`) |
+| POST | `/api/minha-senha` | Autenticado | Alterar própria senha (`{"senha"}`) |
+
+### 5.8 Utilitários
+
+| Método | Rota | Acesso | Descrição |
+|---|---|---|---|
+| POST | `/api/inicializar` | Admin | Carregar dados iniciais (utilizadores, fontes, gírias) |
+| POST | `/api/importar-comentarios` | Admin | Importar 10 comentários de teste |
+| GET | `/api/relatorio` | Admin | Relatório completo agrupado por classificação e fonte |
+
+### 5.9 Exemplo de Análise
+
+```bash
+curl -X POST http://localhost:5000/api/detectar \
+  -H "Content-Type: application/json" \
+  -d '{"texto": "Vou te matar seu idiota"}'
+```
+
+Resposta:
+```json
+{
+  "classificacao": "Crítico",
+  "confianca": 95.0,
+  "girias": [],
+  "palavras": [
+    {"termo": "vou te matar", "nivel": "critico"},
+    {"termo": "idiota", "nivel": "medio"}
+  ],
+  "critico": true,
+  "nivel_geral": "critico"
+}
+```
+
+---
+
+## 6. Motor de Deteção
+
+### 6.1 Arquitetura
+
+O motor (`app/detector.py`) é um singleton baseado em regras (rule-based), partilhado entre web e desktop. Utiliza:
+
+1. **Lista hardcoded (`self.pa`)**: 181 palavras e expressões ofensivas em português
+2. **Dicionário local (`data/local_dictionary.json`)**: termos carregados dinamicamente
+3. **Gírias da BD (`girias_db`)**: 40+ gírias regionais da Lunda-Sul
+
+### 6.2 Sistema de Pontuação
+
+| Fator | Pontos |
+|---|---|
+| Base (confiança inicial) | 5.0 |
+| Por palavra/gíria crítica | +45 |
+| Por palavra/gíria alta | +25 |
+| Por palavra/gíria média | +15 |
+| Por palavra/gíria baixa | +8 |
+| Bónus crítico (se pelo menos 1 termo crítico detetado) | +35 |
+| MAIÚSCULAS (>50% do texto em maiúsculas) | +10 |
+| Sinais de exclamação/interrogação | +2 cada (máx. +10) |
+| **Máximo** | **100** |
+
+### 6.3 Thresholds de Classificação
+
+| Confiança | Classificação | Alerta |
+|---|---|---|
+| ≥ 90% | 🔴 Crítico | Sim |
+| ≥ 70% | 🟠 Ofensivo | Sim |
+| ≥ 50% | 🟡 Suspeito | Sim |
+| < 50% | ⚪ Neutro | Não |
+
+### 6.4 Nível de Gravidade
+
+O `nivel_geral` é determinado pelo nível mais alto entre todas as palavras e gírias detetadas:
+
+```
+critico > alto > medio > baixo > neutro
+```
+
+---
+
+## 7. Base de Dados
+
+### 7.1 Esquema
+
+Ficheiro: `data/cyberbullying.db`  
+Modo: WAL (Write-Ahead Logging) para concorrência  
+Timeout: 10 segundos (múltiplas conexões)
+
+#### Tabela `usuarios`
+
+| Coluna | Tipo | Padrão | Descrição |
+|---|---|---|---|
+| `id` | INTEGER PK | | Identificador único |
+| `nome` | TEXT | | Nome do utilizador |
+| `email` | TEXT | | Email |
+| `senha` | TEXT | '1234' | Palavra-passe (plaintext, offline) |
+| `papel` | TEXT | | 'admin' ou 'moderador' |
+| `avatar` | TEXT | NULL | (reservado) |
+
+#### Tabela `fontes`
+
+| Coluna | Tipo | Padrão | Descrição |
+|---|---|---|---|
+| `id` | INTEGER PK | | Identificador único |
+| `url` | TEXT | | URL da fonte (ex: grupo Facebook) |
+| `nome` | TEXT | | Nome da fonte |
+| `tipo` | TEXT | 'API' | Tipo de fonte |
+| `ativo` | INTEGER | 1 | 1=ativo, 0=inativo |
+
+#### Tabela `comentarios`
+
+| Coluna | Tipo | Descrição |
+|---|---|---|
+| `id` | INTEGER PK | Identificador único |
+| `fonte_id` | INTEGER FK | Referência à fonte |
+| `texto` | TEXT | Conteúdo do comentário |
+| `autor` | TEXT | Autor do comentário |
+| `data` | TEXT | Data/hora ISO 8601 |
+
+#### Tabela `analises`
+
+| Coluna | Tipo | Padrão | Descrição |
+|---|---|---|---|
+| `id` | INTEGER PK | | Identificador único |
+| `comentario_id` | INTEGER FK | | Referência ao comentário |
+| `classificacao` | TEXT | | Crítico/Ofensivo/Suspeito/Neutro |
+| `confianca` | REAL | | Percentagem de confiança (0-100) |
+| `girias` | TEXT | | Gírias detetadas (separadas por vírgula) |
+| `resolvido` | INTEGER | 0 | 0=pendente, 1=resolvido |
+| `data` | TEXT | | Data/hora ISO 8601 |
+
+#### Tabela `girias_db`
+
+| Coluna | Tipo | Padrão | Descrição |
+|---|---|---|---|
+| `id` | INTEGER PK | | Identificador único |
+| `termo` | TEXT | | Termo/gíria |
+| `significado` | TEXT | | Significado |
+| `tipo` | TEXT | | 'ofensivo' ou 'neutro' |
+| `nivel` | TEXT | 'medio' | Nível de gravidade |
+
+### 7.2 Dados Iniciais (Seed)
+
+**Utilizadores:**
+| Nome | Email | Senha | Papel |
+|---|---|---|---|
+| Alberto Baptista | alberto@saurimo.ao | 240520 | admin |
+| Augusta Mulungia | augusta@saurimo.ao | 1234 | moderador |
+| Rafael Mussumari | rafael@saurimo.ao | 1234 | moderador |
+
+**Fontes Facebook:**
+- Juventude Saurimo
+- Lunda-Sul Geral
+
+**Gírias regionais:** 40+ termos nos níveis crítico, alto, médio, baixo e neutro.
+
+### 7.3 Migração Automática
+
+Na primeira execução, o sistema:
+1. Cria as tabelas se não existirem
+2. Adiciona coluna `senha` se estiver em falta
+3. Adiciona coluna `nivel` à tabela `girias_db` se estiver em falta
+4. Atualiza o utilizador admin para "Alberto Baptista" / "240520"
+5. Remove duplicados do utilizador admin antigo
+
+---
+
+## 8. Gestão de Utilizadores e Permissões
+
+### 8.1 Papéis (Roles)
+
+| Papel | Acesso |
+|---|---|
+| `admin` | Todas as funcionalidades, incluindo gestão de utilizadores, relatórios, inicialização |
+| `moderador` | Análise, alertas, análises, fontes, dicionário, alterar própria senha |
+
+### 8.2 Controlo de Acesso
+
+**Web (JavaScript):**
+```javascript
+const papel = document.documentElement.dataset.papel || 'moderador';
+if (papel !== 'admin') {
+    document.querySelectorAll('[data-admin]').forEach(el => el.style.display = 'none');
+}
+```
+
+**Web (Python decorators):**
+```python
+def admin_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if session.get('papel') != 'admin':
+            return jsonify({'erro': 'Acesso negado'}), 403
+        return f(*args, **kwargs)
+    return decorated
+```
+
+**Desktop:**
+```python
+if self.papel == 'admin':
+    self.notebook.add(self.tab_relatorio, text='📄 Relatório')
+    self.notebook.add(self.tab_usuarios, text='👥 Usuários')
+```
+
+### 8.3 Segurança
+
+- **Offline-first**: o sistema funciona 100% offline (localhost)
+- **Passwords em plaintext**: aceitável para âmbito académico 100% offline
+- **Servidor web**: bind a `0.0.0.0:5000` — acessível apenas na rede local
+- **Chave secreta**: hardcoded (`SECRET_KEY`) — adequado para ambiente controlado
+
+---
+
+## 9. Empacotamento (EXE)
+
+### 9.1 Construir o Executável
+
+```bash
+cd offline
+py -m PyInstaller --onefile --windowed --name CyberbullyingDetector ^
+  --add-data "..\app;app" ^
+  --add-data "logo.png;." ^
+  --add-data "..\data\local_dictionary.json;data" ^
+  desktop_app.py
+```
+
+### 9.2 Ficheiro .spec (alternativa)
+
+```bash
+py -m PyInstaller CyberbullyingDetector.spec
+```
+
+### 9.3 Hidden Imports Necessários
+
+Incluídos automaticamente no `.spec`:
+- `flask`, `flask_cors`, `flask_sqlalchemy`
+- `sqlite3`, `json`, `threading`, `logging`
+- `tkinter`, `tkinter.ttk`, `tkinter.messagebox`, `tkinter.filedialog`
+- `datetime`, `os`, `sys`, `re`, `time`
+
+### 9.4 Executável Compilado
+
+Localização: `offline/dist/CyberbullyingDetector.exe`
+
+Após execução, cria:
+- `offline/dist/data/cyberbullying.db` — base de dados
+- `offline/dist/data/debug.log` — log de diagnóstico
+- Servidor web em http://localhost:5000
+
+---
+
+## 10. Manutenção e Resolução de Problemas
+
+### 10.1 Log de Diagnóstico
+
+O sistema escreve para `data/debug.log` (ou `offline/dist/data/debug.log` no EXE):
+
+- Estado da BD antes/depois da migração
+- Tentativas de login (utilizador, senha, resultado)
+- Erros de conexão à BD
+- Diagnóstico automático ao iniciar
+
+### 10.2 Problemas Comuns
+
+| Problema | Causa Provável | Solução |
+|---|---|---|
+| "Usuário ou senha inválidos" | BD corrompida ou migração incompleta | Apagar `data/cyberbullying.db` e reiniciar |
+| "Database is locked" | Concorrência entre web e desktop | Aguardar ou reiniciar. WAL mode + timeout 10s |
+| Servidor web não inicia no desktop | Porta 5000 ocupada | Fechar outras instâncias do Flask |
+| EXE não abre | PyInstaller sem hidden imports | Recompilar com `.spec` atualizado |
+| Login falha após logout (desktop) | Thread do web server ainda ativa | Fechar completamente o EXE e reabrir |
+
+### 10.3 Reset Completo
+
+Para reiniciar o sistema do zero:
+
+```bash
+# Apagar base de dados
+del data\cyberbullying.db
+# ou (se usar EXE)
+del offline\dist\data\cyberbullying.db
+
+# Apagar log
+del data\debug.log
+
+# Reiniciar
+python run.py
+# ou
+offline\dist\CyberbullyingDetector.exe
+```
+
+Na primeira execução, o sistema recria a BD e insere os dados iniciais.
+
+### 10.4 Verificação de Integridade
+
+No desktop, o diagnóstico automático corre ao iniciar (`_diagnose_db()`) e regista:
+- Caminho da BD
+- Se o ficheiro existe
+- Número de análises, comentários e alertas
+- Últimas 5 análises
+
+---
+
+## 11. Credenciais
+
+| Sistema | Utilizador | Senha | Papel |
+|---|---|---|---|
+| Admin | Alberto Baptista | 240520 | admin |
+| Moderador | Augusta Mulungia | 1234 | moderador |
+| Moderador | Rafael Mussumari | 1234 | moderador |
+
+---
+
+## 12. Equipa de Desenvolvimento
+
+**Disciplina:** PP1 — Engenharia de Software I + Sistemas Operacionais
+
+| Membro | Papel no Projeto |
+|---|---|
+| Alberto Baptista | Desenvolvedor principal |
+| Augusta Mulungia | Documentação e testes |
+| Rafael Mussumari | Interface e validação |
+
+**Instituição:** Instituto Superior Politécnico da Lunda-Sul (IPLS)  
+**Localização:** Saurimo, Angola  
+**Ano Letivo:** 2026
+
+---
+
+*Documentação gerada em Junho de 2026. Para mais informações, contactar a equipa de desenvolvimento.*

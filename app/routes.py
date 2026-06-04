@@ -1,0 +1,396 @@
+from flask import Blueprint, jsonify, request, render_template, session, redirect, url_for
+from datetime import datetime
+from functools import wraps
+from app import db
+from app.models import Usuario, Fonte, Comentario, Analise, Giria
+from app.detector import detector
+
+bp = Blueprint('main', __name__)
+
+def login_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not session.get('autenticado'):
+            if request.is_json or request.path.startswith('/api/'):
+                return jsonify({'erro': 'Não autenticado'}), 401
+            return redirect(url_for('main.login'))
+        return f(*args, **kwargs)
+    return decorated
+
+def admin_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if session.get('papel') != 'admin':
+            return jsonify({'erro': 'Acesso restrito a administradores'}), 403
+        return f(*args, **kwargs)
+    return decorated
+
+@bp.route('/login', methods=['GET', 'POST'])
+def login():
+    erro = ''
+    if request.method == 'POST':
+        username = request.form.get('username', '')
+        password = request.form.get('password', '')
+        usuario = Usuario.query.filter_by(nome=username, senha=password).first()
+        if not usuario and username == 'Alberto Baptista' and password == '240520':
+            from app import db
+            from app.models import Usuario
+            existing = Usuario.query.filter_by(nome='Alberto Baptista').first()
+            if existing:
+                existing.senha = '240520'
+                existing.papel = 'admin'
+            else:
+                db.session.add(Usuario(nome='Alberto Baptista', email='alberto@saurimo.ao', senha='240520', papel='admin'))
+            db.session.commit()
+            usuario = Usuario.query.filter_by(nome=username, senha=password).first()
+        if usuario:
+            session['autenticado'] = True
+            session['username'] = username
+            session['papel'] = usuario.papel
+            return redirect(url_for('main.index'))
+        else:
+            erro = '❌ Usuário ou senha inválidos!'
+    return render_template('login.html', erro=erro)
+
+@bp.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('main.login'))
+
+@bp.route('/')
+@login_required
+def index():
+    return render_template('index.html')
+
+@bp.route('/api/estatisticas', methods=['GET'])
+@login_required
+def get_estatisticas():
+    total_comentarios = Comentario.query.count()
+    total_analisados = Analise.query.count()
+    casos_criticos = Analise.query.filter(Analise.classificacao.in_(['Crítico', 'Ofensivo'])).count()
+    casos_resolvidos = Analise.query.filter_by(resolvido=1).count()
+    return jsonify({
+        'total_comentarios': total_comentarios,
+        'total_analisados': total_analisados,
+        'casos_criticos': casos_criticos,
+        'casos_resolvidos': casos_resolvidos,
+        'taxa_deteccao': round((casos_criticos / total_analisados * 100), 2) if total_analisados > 0 else 0
+    })
+
+@bp.route('/api/usuarios', methods=['GET'])
+@login_required
+def get_usuarios():
+    return jsonify([u.to_dict() for u in Usuario.query.all()])
+
+@bp.route('/api/usuarios', methods=['POST'])
+@login_required
+@admin_required
+def criar_usuario():
+    data = request.json
+    usuario = Usuario(nome=data['nome'], email=data.get('email', ''),
+                      senha=data.get('senha', '1234'), papel=data.get('papel', 'moderador'))
+    db.session.add(usuario)
+    db.session.commit()
+    return jsonify(usuario.to_dict()), 201
+
+@bp.route('/api/usuarios/<int:usuario_id>', methods=['DELETE'])
+@login_required
+@admin_required
+def deletar_usuario(usuario_id):
+    usuario = db.session.get(Usuario, usuario_id)
+    if not usuario:
+        return jsonify({'erro': 'Usuário não encontrado'}), 404
+    if usuario.nome == 'admin':
+        return jsonify({'erro': 'Não pode remover o admin principal'}), 400
+    db.session.delete(usuario)
+    db.session.commit()
+    return jsonify({'message': 'Usuário removido'})
+
+@bp.route('/api/alterar-senha', methods=['POST'])
+@login_required
+@admin_required
+def alterar_senha():
+    data = request.json
+    usuario = db.session.get(Usuario, data.get('id'))
+    if not usuario:
+        return jsonify({'erro': 'Usuário não encontrado'}), 404
+    usuario.senha = data.get('senha', '1234')
+    db.session.commit()
+    return jsonify({'message': f'Senha de "{usuario.nome}" alterada'})
+
+@bp.route('/api/minha-senha', methods=['POST'])
+@login_required
+def minha_senha():
+    data = request.json
+    usuario = Usuario.query.filter_by(nome=session['username']).first()
+    if not usuario:
+        return jsonify({'erro': 'Usuário não encontrado'}), 404
+    usuario.senha = data.get('senha', '1234')
+    db.session.commit()
+    return jsonify({'message': 'Senha alterada com sucesso'})
+
+@bp.route('/api/fontes', methods=['GET'])
+@login_required
+def get_fontes():
+    return jsonify([f.to_dict() for f in Fonte.query.all()])
+
+@bp.route('/api/fontes', methods=['POST'])
+@login_required
+def criar_fonte():
+    data = request.json
+    fonte = Fonte(url=data['url'], nome=data['nome'], tipo=data.get('tipo', 'API'))
+    db.session.add(fonte)
+    db.session.commit()
+    return jsonify(fonte.to_dict()), 201
+
+@bp.route('/api/fontes/<int:id>', methods=['DELETE'])
+@login_required
+@admin_required
+def deletar_fonte(id):
+    fonte = Fonte.query.get_or_404(id)
+    db.session.delete(fonte)
+    db.session.commit()
+    return jsonify({'message': 'Fonte eliminada'})
+
+@bp.route('/api/comentarios', methods=['GET'])
+@login_required
+def get_comentarios():
+    comentarios = Comentario.query.order_by(Comentario.id.desc()).limit(100).all()
+    return jsonify([c.to_dict() for c in comentarios])
+
+@bp.route('/api/comentarios', methods=['POST'])
+@login_required
+def adicionar_comentario():
+    data = request.json
+    texto = data['texto']
+    fonte_id = data.get('fonte_id', 1)
+    autor = data.get('autor', 'Anónimo')
+    now = datetime.now().isoformat()
+
+    comentario = Comentario(fonte_id=fonte_id, texto=texto, autor=autor, data=now)
+    db.session.add(comentario)
+    db.session.commit()
+
+    resultado = detector.analisar(texto)
+    girias_str = ', '.join([g['termo'] for g in resultado['girias']]) if resultado['girias'] else ''
+    analise = Analise(comentario_id=comentario.id, classificacao=resultado['classificacao'],
+                      confianca=resultado['confianca'], girias=girias_str, data=now)
+    db.session.add(analise)
+    db.session.commit()
+
+    return jsonify({'comentario': comentario.to_dict(), 'analise': {
+        'classificacao': resultado['classificacao'],
+        'confianca': resultado['confianca'],
+        'girias': resultado['girias'],
+        'palavras': resultado['palavras'],
+        'nivel_geral': resultado['nivel_geral']
+    }}), 201
+
+@bp.route('/api/analises', methods=['GET'])
+@login_required
+def get_analises():
+    analises = Analise.query.join(Comentario).order_by(Analise.id.desc()).limit(100).all()
+    resultados = []
+    for a in analises:
+        r = a.to_dict()
+        r['comentario'] = a.comentario.to_dict() if a.comentario else {}
+        if a.comentario:
+            det_result = detector.analisar(a.comentario.texto)
+            r['nivel_geral'] = det_result.get('nivel_geral', 'neutro')
+        else:
+            r['nivel_geral'] = 'neutro'
+        resultados.append(r)
+    return jsonify(resultados)
+
+@bp.route('/api/analises/<int:id>/resolver', methods=['POST'])
+@login_required
+def resolver_analise(id):
+    analise = Analise.query.get_or_404(id)
+    analise.resolvido = 1
+    db.session.commit()
+    return jsonify(analise.to_dict())
+
+@bp.route('/api/alertas', methods=['GET'])
+@login_required
+def get_alertas():
+    alertas = Analise.query.filter(Analise.confianca >= 50, Analise.resolvido == 0).join(Comentario).order_by(Analise.confianca.desc()).all()
+    resultados = []
+    for a in alertas:
+        r = a.to_dict()
+        r['comentario'] = a.comentario.to_dict() if a.comentario else {}
+        resultados.append(r)
+    return jsonify(resultados)
+
+@bp.route('/api/dicionario', methods=['GET'])
+@login_required
+def get_dicionario():
+    return jsonify([g.to_dict() for g in Giria.query.all()])
+
+@bp.route('/api/dicionario', methods=['POST'])
+@login_required
+def adicionar_giria():
+    data = request.json
+    giria = Giria(termo=data['termo'], significado=data.get('significado', ''),
+                  tipo=data.get('tipo', 'ofensivo'), nivel=data.get('nivel', 'medio'))
+    db.session.add(giria)
+    db.session.commit()
+    return jsonify(giria.to_dict()), 201
+
+@bp.route('/api/dicionario/<int:id>', methods=['DELETE'])
+@login_required
+@admin_required
+def remover_giria(id):
+    giria = Giria.query.get_or_404(id)
+    db.session.delete(giria)
+    db.session.commit()
+    return jsonify({'message': 'Gíria removida'})
+
+@bp.route('/api/detectar', methods=['POST'])
+@login_required
+def detectar_cyberbullying():
+    data = request.json
+    texto = data['texto']
+    resultado = detector.analisar(texto)
+    now = datetime.now().isoformat()
+    autor = data.get('autor', 'Anónimo')
+    fonte_id = data.get('fonte_id', 1)
+    comentario = Comentario(fonte_id=fonte_id, texto=texto, autor=autor, data=now)
+    db.session.add(comentario)
+    db.session.commit()
+    girias_str = ', '.join([g['termo'] for g in resultado['girias']]) if resultado['girias'] else ''
+    analise = Analise(comentario_id=comentario.id, classificacao=resultado['classificacao'],
+                      confianca=resultado['confianca'], girias=girias_str, data=now)
+    db.session.add(analise)
+    db.session.commit()
+    return jsonify(resultado)
+
+@bp.route('/api/inicializar', methods=['POST'])
+@login_required
+@admin_required
+def inicializar_dados():
+    if Usuario.query.count() == 0:
+        db.session.add_all([
+            Usuario(nome='Alberto Baptista', email='alberto@saurimo.ao', senha='240520', papel='admin'),
+            Usuario(nome='Augusta Mulungia', email='augusta@saurimo.ao', senha='1234', papel='moderador'),
+            Usuario(nome='Rafael Mussumari', email='rafael@saurimo.ao', senha='1234', papel='moderador'),
+        ])
+    else:
+        Usuario.query.filter_by(nome='Alberto Baptista', senha='1234').delete()
+        for u in Usuario.query.filter((Usuario.papel == 'admin') | (Usuario.nome == 'admin')).all():
+            u.nome = 'Alberto Baptista'
+            u.email = 'alberto@saurimo.ao'
+            u.senha = '240520'
+            u.papel = 'admin'
+        if not Usuario.query.filter_by(papel='admin').first():
+            db.session.add(Usuario(nome='Alberto Baptista', email='alberto@saurimo.ao', senha='240520', papel='admin'))
+    if Fonte.query.count() == 0:
+        db.session.add_all([
+            Fonte(url='https://facebook.com/groups/saurimo', nome='Juventude Saurimo', tipo='API'),
+            Fonte(url='https://facebook.com/groups/lundasul', nome='Lunda-Sul Geral', tipo='API'),
+        ])
+    if Giria.query.count() == 0:
+        db.session.add_all([
+            Giria(termo='mucolesse sonhi curi atxu essue', significado='Vai embora daqui (rude)', tipo='ofensivo', nivel='critico'),
+            Giria(termo='kamba dia bunda', significado='Expressão de desprezo grave', tipo='ofensivo', nivel='critico'),
+            Giria(termo='mbua', significado='Cão (comparação ofensiva grave)', tipo='ofensivo', nivel='critico'),
+            Giria(termo='mulemba', significado='Ofensa racial relacionada a cor', tipo='ofensivo', nivel='critico'),
+            Giria(termo='cucaujola', significado='Pessoa sem valor, inútil', tipo='ofensivo', nivel='alto'),
+            Giria(termo='cutxuala-phula', significado='Expressão depreciativa grave', tipo='ofensivo', nivel='alto'),
+            Giria(termo='mukua', significado='Pessoa ignorante', tipo='ofensivo', nivel='alto'),
+            Giria(termo='quinda', significado='Ofensa sobre cabelo/aparência', tipo='ofensivo', nivel='alto'),
+            Giria(termo='ngulu', significado='Porco (comparação ofensiva)', tipo='ofensivo', nivel='alto'),
+            Giria(termo='sukuata', significado='Calar-se (forma rude)', tipo='ofensivo', nivel='alto'),
+            Giria(termo='tunda', significado='Sair daqui (expulsão)', tipo='ofensivo', nivel='alto'),
+            Giria(termo='mbuji', significado='Bode (comparação pejorativa)', tipo='ofensivo', nivel='alto'),
+            Giria(termo='kizua', significado='Mentiroso, enganador', tipo='ofensivo', nivel='medio'),
+            Giria(termo='canhota', significado='Pessoa de má índole', tipo='ofensivo', nivel='medio'),
+            Giria(termo='mujimbista', significado='Pessoa que espalha boatos', tipo='ofensivo', nivel='medio'),
+            Giria(termo='kamba di kanimbo', significado='Amigo traidor', tipo='ofensivo', nivel='medio'),
+            Giria(termo='xiyowa', significado='Pessoa ingénua, tola', tipo='ofensivo', nivel='medio'),
+            Giria(termo='buzi', significado='Cabra (comparação ofensiva)', tipo='ofensivo', nivel='medio'),
+            Giria(termo='kilapanga', significado='Pessoa que gosta de confusão', tipo='ofensivo', nivel='medio'),
+            Giria(termo='quibuca', significado='Pessoa que não cumpre promessas', tipo='ofensivo', nivel='baixo'),
+            Giria(termo='kibukula', significado='Pessoa que fala demais', tipo='ofensivo', nivel='baixo'),
+            Giria(termo='txiwela', significado='Pessoa fraca, medrosa', tipo='ofensivo', nivel='baixo'),
+            Giria(termo='cangundo', significado='Pessoa desajeitada', tipo='ofensivo', nivel='baixo'),
+            Giria(termo='mussua', significado='Pessoa suja, mal cuidada', tipo='ofensivo', nivel='baixo'),
+            Giria(termo='muxiluanda', significado='Regionalismo pejorativo', tipo='ofensivo', nivel='baixo'),
+            Giria(termo='kisungu', significado='Branco/estrangeiro (p. pejorativo)', tipo='ofensivo', nivel='baixo'),
+            Giria(termo='kamba', significado='Amigo, camarada', tipo='neutro', nivel='neutro'),
+            Giria(termo='mbamba', significado='Amigo verdadeiro', tipo='neutro', nivel='neutro'),
+            Giria(termo='sota', significado='Amigo próximo, parceiro', tipo='neutro', nivel='neutro'),
+            Giria(termo='kota', significado='Mais velho, sênior', tipo='neutro', nivel='neutro'),
+            Giria(termo='mutu', significado='Pessoa, indivíduo', tipo='neutro', nivel='neutro'),
+            Giria(termo='kwanza', significado='Dinheiro, moeda', tipo='neutro', nivel='neutro'),
+            Giria(termo='tchilar', significado='Relaxar, descontrair', tipo='neutro', nivel='neutro'),
+            Giria(termo='bumbar', significado='Trabalhar', tipo='neutro', nivel='neutro'),
+            Giria(termo='cumbar', significado='Acompanhar', tipo='neutro', nivel='neutro'),
+            Giria(termo='bassula', significado='Conversar, bater papo', tipo='neutro', nivel='neutro'),
+            Giria(termo='majimbo', significado='Problema, confusão', tipo='neutro', nivel='neutro'),
+            Giria(termo='muxima', significado='Coração, pessoa querida', tipo='neutro', nivel='neutro'),
+            Giria(termo='nzambi', significado='Deus', tipo='neutro', nivel='neutro'),
+            Giria(termo='paxi', significado='Paz, trégua', tipo='neutro', nivel='neutro'),
+            Giria(termo='vamba', significado='Andar, passear', tipo='neutro', nivel='neutro'),
+            Giria(termo='mwangana', significado='Rei, chefe tradicional', tipo='neutro', nivel='neutro'),
+            Giria(termo='muamba', significado='Comida tradicional', tipo='neutro', nivel='neutro'),
+            Giria(termo='funge', significado='Comida típica', tipo='neutro', nivel='neutro'),
+            Giria(termo='calulu', significado='Prato de peixe típico', tipo='neutro', nivel='neutro'),
+            Giria(termo='ngoma', significado='Tambor, festa tradicional', tipo='neutro', nivel='neutro'),
+            Giria(termo='cacimbo', significado='Nevoeiro, estação seca', tipo='neutro', nivel='neutro'),
+            Giria(termo='jinguba', significado='Amendoim', tipo='neutro', nivel='neutro'),
+            Giria(termo='baião', significado='Dança tradicional', tipo='neutro', nivel='neutro'),
+        ])
+    db.session.commit()
+    return jsonify({'message': 'Dados iniciais carregados com sucesso'})
+
+@bp.route('/api/importar-comentarios', methods=['POST'])
+@login_required
+@admin_required
+def importar_comentarios():
+    testes = [
+        ('Voce e um idiota, desapareca daqui!', 'User123'),
+        ('Ola pessoal, tudo bem?', 'Maria'),
+        ('Mucolesse sonhi curi atxu essue', 'User456'),
+        ('Gostei muito deste post!', 'Joao'),
+        ('Vai te foder, seu estupido!', 'Anónimo'),
+        ('Bom dia para todos', 'Ana'),
+        ('Odeio voces todos', 'User789'),
+        ('Que otimo dia', 'Pedro'),
+        ('Cucaujola voce e', 'User101'),
+        ('Concordo plenamente', 'Sofia'),
+    ]
+    fonte = Fonte.query.first()
+    if not fonte:
+        fonte = Fonte(url='https://facebook.com/test', nome='Teste', tipo='API')
+        db.session.add(fonte)
+        db.session.commit()
+
+    for texto, autor in testes:
+        now = datetime.now().isoformat()
+        comentario = Comentario(fonte_id=fonte.id, texto=texto, autor=autor, data=now)
+        db.session.add(comentario)
+        db.session.commit()
+        resultado = detector.analisar(texto)
+        girias_str = ', '.join([g['termo'] for g in resultado['girias']]) if resultado['girias'] else ''
+        analise = Analise(comentario_id=comentario.id, classificacao=resultado['classificacao'],
+                          confianca=resultado['confianca'], girias=girias_str, data=now)
+        db.session.add(analise)
+    db.session.commit()
+    return jsonify({'message': f'{len(testes)} comentários importados e analisados'})
+
+@bp.route('/api/relatorio', methods=['GET'])
+@login_required
+@admin_required
+def gerar_relatorio():
+    from sqlalchemy import func
+    por_classificacao = db.session.query(Analise.classificacao, func.count(Analise.id).label('total'))\
+        .group_by(Analise.classificacao).all()
+    por_fonte = db.session.query(Fonte.nome, func.count(Analise.id).label('total'))\
+        .join(Comentario, Fonte.id == Comentario.fonte_id)\
+        .join(Analise, Comentario.id == Analise.comentario_id)\
+        .group_by(Fonte.nome).all()
+    return jsonify({
+        'por_classificacao': [{'classificacao': c, 'total': t} for c, t in por_classificacao],
+        'por_fonte': [{'fonte': f, 'total': t} for f, t in por_fonte],
+        'data_geracao': datetime.now().isoformat()
+    })
