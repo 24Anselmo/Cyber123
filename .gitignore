@@ -1,23 +1,4 @@
-# Python
-__pycache__/
-*.pyc
-*.pyo
-*.egg-info/
-build/
-venv/
-.venv/
-
-# Banco de dados (logs apenas)
-data/debug.log
-
-# IDE
+# Apenas IDE e sistema
 .vscode/
 .idea/
-*.swp
-*.swo
-
-# Windows
 Thumbs.db
-
-# Test DB (não subir bancos de teste)
-*test_override*
