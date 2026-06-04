@@ -280,10 +280,8 @@ async function gerarRelatorio() {
 
 async function baixarRelatorioPDF() {
     try {
-        const resp = await fetch('/api/relatorio/pdf', {
-            headers: getHeaders()
-        });
-        if (!resp.ok) { const e = await resp.json(); alert(e.erro || 'Erro'); return; }
+        const resp = await fetch('/api/relatorio/pdf');
+        if (!resp.ok) { alert('Erro ao gerar PDF'); return; }
         const blob = await resp.blob();
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
