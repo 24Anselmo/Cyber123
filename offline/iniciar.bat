@@ -7,5 +7,5 @@ echo.
 echo A iniciar aplicacao...
 echo.
 cd "%~dp0"
-python desktop_app.py
+py -3 desktop_app.py
 pause
