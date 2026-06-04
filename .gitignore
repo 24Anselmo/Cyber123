@@ -1,4 +1,11 @@
-# Apenas IDE e sistema
+# IDE e sistema
 .vscode/
 .idea/
 Thumbs.db
+
+# Build do EXE (reconstruir com PyInstaller)
+offline/build/
+offline/dist/
+__pycache__/
+*.pyc
+.pytest_cache/
