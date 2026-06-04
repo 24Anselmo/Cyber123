@@ -401,7 +401,6 @@ def gerar_relatorio():
 def gerar_relatorio_pdf():
     from fpdf import FPDF
     from sqlalchemy import func
-    import io
 
     total_analises = Analise.query.count()
     por_classificacao = db.session.query(Analise.classificacao, func.count(Analise.id).label('total'))\
@@ -445,10 +444,7 @@ def gerar_relatorio_pdf():
     pdf.set_font('Helvetica', 'I', 9)
     pdf.cell(0, 5, 'Relatorio gerado automaticamente pelo Sistema de Detecao de Cyberbullying', align='C', new_x='LMARGIN', new_y='NEXT')
 
-    buf = io.BytesIO()
-    pdf.output(buf, 'F')
-    buf.seek(0)
-    return buf.read(), 200, {
+    return pdf.output(), 200, {
         'Content-Type': 'application/pdf',
         'Content-Disposition': 'attachment; filename="relatorio_cyberbullying.pdf"'
     }
