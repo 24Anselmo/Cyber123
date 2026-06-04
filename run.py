@@ -8,7 +8,7 @@ _exe_db = os.path.join(os.path.dirname(os.path.abspath(__file__)),
 if os.path.exists(_exe_db):
     os.environ['CYBERBULLYING_DB_PATH'] = _exe_db
 
-from app import create_app
+from app import create_app, socketio
 
 app = create_app()
 
@@ -23,4 +23,4 @@ if __name__ == '__main__':
     print("\nPara testar a detecção:")
     print("  curl -X POST http://localhost:5000/api/detectar -H 'Content-Type: application/json' -d '{\"texto\":\"Seu texto aqui\"}'")
     print("\n" + "=" * 60)
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    socketio.run(app, host='0.0.0.0', port=5000, debug=True, allow_unsafe_werkzeug=True)

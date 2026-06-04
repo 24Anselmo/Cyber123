@@ -1,0 +1,17 @@
+[
+  "tests/test_api.py::TestAlertas::test_get_alertas_returns_list",
+  "tests/test_api.py::TestDetectar::test_detectar_analisa_e_salva",
+  "tests/test_api.py::TestEstatisticas::test_get_estatisticas_returns_json_with_keys",
+  "tests/test_api.py::TestUnauthenticated::test_unauthenticated_returns_401",
+  "tests/test_api.py::TestUsuarios::test_criar_usuario_como_admin",
+  "tests/test_api.py::TestUsuarios::test_criar_usuario_requer_admin",
+  "tests/test_auth.py::test_login_success",
+  "tests/test_auth.py::test_login_wrong_password",
+  "tests/test_auth.py::test_logout_clears_session",
+  "tests/test_auth.py::test_protected_route_redirects_when_not_authenticated",
+  "tests/test_detector.py::test_analisar_structure",
+  "tests/test_detector.py::test_critical_girias",
+  "tests/test_detector.py::test_empty_text",
+  "tests/test_detector.py::test_neutral_text",
+  "tests/test_detector.py::test_offensive_text"
+]

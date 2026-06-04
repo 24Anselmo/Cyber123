@@ -3,9 +3,17 @@ import json
 import os
 
 class Detector:
-    def __init__(self):
+    def __init__(self, use_bert=False):
         self.dicionario_local = {}
         self._load_dicionario_local()
+        self.use_bert = use_bert
+        self.bert_detector = None
+        if use_bert:
+            try:
+                from app.bert_classifier import BertDetector
+                self.bert_detector = BertDetector()
+            except Exception:
+                self.use_bert = False
         self.pa = [
             ('vou te matar', 'critico'), ('vou matar te', 'critico'), ('vou te assassinar', 'critico'),
             ('vou te enforcar', 'critico'), ('vou te decapitar', 'critico'), ('vou te cortar', 'critico'),
@@ -96,7 +104,7 @@ class Detector:
             if p in texto_lower:
                 encontradas.append({'termo': p, 'nivel': nivel})
 
-        conf = 5.0
+        conf = 0.0
         for g in girias:
             conf += self._peso_nivel(g['nivel'])
         for p in encontradas:
@@ -125,7 +133,7 @@ class Detector:
         if todos_niveis:
             nivel_geral = max(todos_niveis, key=lambda n: self._peso_nivel(n))
 
-        return {
+        resultado = {
             'classificacao': cls,
             'confianca': round(conf, 2),
             'girias': girias,
@@ -134,4 +142,24 @@ class Detector:
             'nivel_geral': nivel_geral
         }
 
-detector = Detector()
+        if self.use_bert and self.bert_detector:
+            try:
+                bert_res = self.bert_detector.classificar(texto)
+                w_rule, w_bert = 0.6, 0.4
+                combined_conf = w_rule * conf + w_bert * bert_res['confianca']
+                if combined_conf >= 90:
+                    combined_cls = 'Crítico'
+                elif combined_conf >= 70:
+                    combined_cls = 'Ofensivo'
+                elif combined_conf >= 50:
+                    combined_cls = 'Suspeito'
+                else:
+                    combined_cls = 'Neutro'
+                resultado['bert_classificacao'] = combined_cls
+                resultado['bert_confianca'] = round(combined_conf, 2)
+            except Exception:
+                pass
+
+        return resultado
+
+detector = Detector(use_bert=False)

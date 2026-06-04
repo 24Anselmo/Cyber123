@@ -304,5 +304,179 @@
     "contexto": "Usado para humilhar homem",
     "nivel": "alto",
     "ofensivo": true
+  },
+  "kamba yange": {
+    "significado": "Meu amigo (pode ser irónico/sarcástico em Luanda)",
+    "contexto": "Usado de forma provocadora em discussões - Luanda",
+    "nivel": "baixo",
+    "ofensivo": false
+  },
+  "gata": {
+    "significado": "Rapariga, mulher (pode ser pejorativo em certos contextos)",
+    "contexto": "Termo informal urbano - Luanda",
+    "nivel": "baixo",
+    "ofensivo": false
+  },
+  "kumbu": {
+    "significado": "Pessoa ignorante, atrasada",
+    "contexto": "Insulto comum no Huambo - Umbundu",
+    "nivel": "medio",
+    "ofensivo": true
+  },
+  "onjango": {
+    "significado": "Conversa, reunião (também usado como 'fofoca')",
+    "contexto": "Termo Umbundu do planalto central - Benguela/Huambo",
+    "nivel": "neutro",
+    "ofensivo": false
+  },
+  "ochilume": {
+    "significado": "Homem valente (pode ser irónico)",
+    "contexto": "Desafio à masculinidade - Umbundu",
+    "nivel": "baixo",
+    "ofensivo": true
+  },
+  "olamba": {
+    "significado": "Gaba-se, orgulho excessivo",
+    "contexto": "Crítica a alguém arrogante - Umbundu",
+    "nivel": "baixo",
+    "ofensivo": true
+  },
+  "ukuale": {
+    "significado": "Coisa ruim, sem valor",
+    "contexto": "Depreciação de objeto ou pessoa - Benguela",
+    "nivel": "medio",
+    "ofensivo": true
+  },
+  "buta": {
+    "significado": "Morrer, falecer (usado como praga/maldição)",
+    "contexto": "Expressão grave de desejo de morte - Cabinda",
+    "nivel": "critico",
+    "ofensivo": true
+  },
+  "nkanda": {
+    "significado": "Livro (pode ser usado para 'acusação')",
+    "contexto": "Contexto de prestação de contas - Cabinda/Fiot",
+    "nivel": "neutro",
+    "ofensivo": false
+  },
+  "pandua": {
+    "significado": "Fugir, escapar",
+    "contexto": "Acusação de covardia - Umbundu",
+    "nivel": "baixo",
+    "ofensivo": true
+  },
+  "kuteka": {
+    "significado": "Roubar, furtar",
+    "contexto": "Acusação grave de furto - Kuando Kubango",
+    "nivel": "alto",
+    "ofensivo": true
+  },
+  "cassule": {
+    "significado": "Miúdo, criança de rua (pejorativo)",
+    "contexto": "Discriminação social - Luanda/Kimbundu",
+    "nivel": "alto",
+    "ofensivo": true
+  },
+  "musseque": {
+    "significado": "Bairro pobre (usado como ofensa de classe)",
+    "contexto": "Preconceito de origem social - Luanda",
+    "nivel": "medio",
+    "ofensivo": true
+  },
+  "banga": {
+    "significado": "Perturbado, maluco",
+    "contexto": "Insulto à sanidade mental - Luanda",
+    "nivel": "alto",
+    "ofensivo": true
+  },
+  "ngola": {
+    "significado": "Poder, força (ou referência a Luanda)",
+    "contexto": "Usado em contextos de dominação - Kimbundu",
+    "nivel": "neutro",
+    "ofensivo": false
+  },
+  "calombeta": {
+    "significado": "Pessoa rebelde, que não obedece",
+    "contexto": "Crítica a comportamento insubordinado - Luanda",
+    "nivel": "medio",
+    "ofensivo": true
+  },
+  "soma": {
+    "significado": "Comida (pode ser usado para 'suborno')",
+    "contexto": "Contexto de corrupção - Umbundu",
+    "nivel": "neutro",
+    "ofensivo": false
+  },
+  "osoma": {
+    "significado": "Chefe, patrão (ou 'exibido')",
+    "contexto": "Crítica a quem se acha superior - Benguela",
+    "nivel": "baixo",
+    "ofensivo": true
+  },
+  "mabeco": {
+    "significado": "Cão de rua, vira-lata (ofensa grave)",
+    "contexto": "Comparação animal depreciativa - Luanda",
+    "nivel": "critico",
+    "ofensivo": true
+  },
+  "camões": {
+    "significado": "Pessoa que se acha inteligente (sarcástico)",
+    "contexto": "Ironia sobre suposta superioridade intelectual - Luanda",
+    "nivel": "baixo",
+    "ofensivo": true
+  },
+  "ekamba": {
+    "significado": "Amizade, camaradagem",
+    "contexto": "Termo positivo de união - Umbundu",
+    "nivel": "neutro",
+    "ofensivo": false
+  },
+  "kudia": {
+    "significado": "Comer (ou 'gastar dinheiro')",
+    "contexto": "Contexto financeiro - Kimbundu",
+    "nivel": "neutro",
+    "ofensivo": false
+  },
+  "kuzola": {
+    "significado": "Gostar, amar",
+    "contexto": "Expressão de afeto - Kimbundu",
+    "nivel": "neutro",
+    "ofensivo": false
+  },
+  "kutombela": {
+    "significado": "Dançar, festejar",
+    "contexto": "Convite para festa - Kimbundu",
+    "nivel": "neutro",
+    "ofensivo": false
+  },
+  "mbila": {
+    "significado": "Telefonema, chamada",
+    "contexto": "Contexto de comunicação - Luanda",
+    "nivel": "neutro",
+    "ofensivo": false
+  },
+  "bwé": {
+    "significado": "Sim, certo (pode ser usado de forma irónica)",
+    "contexto": "Confirmação informal - Luanda",
+    "nivel": "neutro",
+    "ofensivo": false
+  },
+  "kota dia kota": {
+    "significado": "O maioral, o chefe dos chefes (irónico)",
+    "contexto": "Sarcasmo sobre hierarquia - Angola geral",
+    "nivel": "baixo",
+    "ofensivo": true
+  },
+  "mwangana wa kuata": {
+    "significado": "Rei da confusão, líder de encrencas",
+    "contexto": "Acusação a líder problemático - Lunda-Sul/Cokwe",
+    "nivel": "medio",
+    "ofensivo": true
+  },
+  "ngana muene": {
+    "significado": "Dono da verdade (sarcástico)",
+    "contexto": "Crítica a quem se acha sempre certo - Kimbundu",
+    "nivel": "baixo",
+    "ofensivo": true
   }
 }

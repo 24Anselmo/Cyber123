@@ -1,7 +1,8 @@
+import bcrypt
 from flask import Blueprint, jsonify, request, render_template, session, redirect, url_for
 from datetime import datetime
 from functools import wraps
-from app import db
+from app import db, socketio
 from app.models import Usuario, Fonte, Comentario, Analise, Giria
 from app.detector import detector
 
@@ -25,25 +26,36 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated
 
+def _hash_senha(senha):
+    return bcrypt.hashpw(senha.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+def _check_senha(senha, hash_armazenado):
+    if hash_armazenado and (hash_armazenado.startswith('$2b$') or hash_armazenado.startswith('$2a$')):
+        return bcrypt.checkpw(senha.encode('utf-8'), hash_armazenado.encode('utf-8'))
+    return hash_armazenado == senha  # fallback para senhas antigas em texto plano
+
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
     erro = ''
     if request.method == 'POST':
         username = request.form.get('username', '')
         password = request.form.get('password', '')
-        usuario = Usuario.query.filter_by(nome=username, senha=password).first()
-        if not usuario and username == 'Alberto Baptista' and password == '240520':
-            from app import db
-            from app.models import Usuario
+        usuario = Usuario.query.filter_by(nome=username).first()
+        if usuario:
+            match = _check_senha(password, usuario.senha)
+        else:
+            match = False
+        if not match and username == 'Alberto Baptista' and password == '240520':
             existing = Usuario.query.filter_by(nome='Alberto Baptista').first()
             if existing:
-                existing.senha = '240520'
+                existing.senha = _hash_senha('240520')
                 existing.papel = 'admin'
             else:
-                db.session.add(Usuario(nome='Alberto Baptista', email='alberto@saurimo.ao', senha='240520', papel='admin'))
+                db.session.add(Usuario(nome='Alberto Baptista', email='alberto@saurimo.ao', senha=_hash_senha('240520'), papel='admin'))
             db.session.commit()
-            usuario = Usuario.query.filter_by(nome=username, senha=password).first()
-        if usuario:
+            usuario = Usuario.query.filter_by(nome=username).first()
+            match = True if usuario else False
+        if match:
             session['autenticado'] = True
             session['username'] = username
             session['papel'] = usuario.papel
@@ -88,7 +100,7 @@ def get_usuarios():
 def criar_usuario():
     data = request.json
     usuario = Usuario(nome=data['nome'], email=data.get('email', ''),
-                      senha=data.get('senha', '1234'), papel=data.get('papel', 'moderador'))
+                      senha=_hash_senha(data.get('senha', '1234')), papel=data.get('papel', 'moderador'))
     db.session.add(usuario)
     db.session.commit()
     return jsonify(usuario.to_dict()), 201
@@ -114,7 +126,7 @@ def alterar_senha():
     usuario = db.session.get(Usuario, data.get('id'))
     if not usuario:
         return jsonify({'erro': 'Usuário não encontrado'}), 404
-    usuario.senha = data.get('senha', '1234')
+    usuario.senha = _hash_senha(data.get('senha', '1234'))
     db.session.commit()
     return jsonify({'message': f'Senha de "{usuario.nome}" alterada'})
 
@@ -125,7 +137,7 @@ def minha_senha():
     usuario = Usuario.query.filter_by(nome=session['username']).first()
     if not usuario:
         return jsonify({'erro': 'Usuário não encontrado'}), 404
-    usuario.senha = data.get('senha', '1234')
+    usuario.senha = _hash_senha(data.get('senha', '1234'))
     db.session.commit()
     return jsonify({'message': 'Senha alterada com sucesso'})
 
@@ -178,6 +190,14 @@ def adicionar_comentario():
     db.session.add(analise)
     db.session.commit()
 
+    if resultado['confianca'] >= 50:
+        socketio.emit('novo_alerta', {
+            'id': analise.id,
+            'classificacao': resultado['classificacao'],
+            'confianca': resultado['confianca'],
+            'texto': texto[:100]
+        })
+
     return jsonify({'comentario': comentario.to_dict(), 'analise': {
         'classificacao': resultado['classificacao'],
         'confianca': resultado['confianca'],
@@ -208,6 +228,7 @@ def resolver_analise(id):
     analise = Analise.query.get_or_404(id)
     analise.resolvido = 1
     db.session.commit()
+    socketio.emit('alerta_resolvido', {'id': id})
     return jsonify(analise.to_dict())
 
 @bp.route('/api/alertas', methods=['GET'])
@@ -262,6 +283,13 @@ def detectar_cyberbullying():
                       confianca=resultado['confianca'], girias=girias_str, data=now)
     db.session.add(analise)
     db.session.commit()
+    if resultado['confianca'] >= 50:
+        socketio.emit('novo_alerta', {
+            'id': analise.id,
+            'classificacao': resultado['classificacao'],
+            'confianca': resultado['confianca'],
+            'texto': texto[:100]
+        })
     return jsonify(resultado)
 
 @bp.route('/api/inicializar', methods=['POST'])
@@ -270,76 +298,48 @@ def detectar_cyberbullying():
 def inicializar_dados():
     if Usuario.query.count() == 0:
         db.session.add_all([
-            Usuario(nome='Alberto Baptista', email='alberto@saurimo.ao', senha='240520', papel='admin'),
-            Usuario(nome='Augusta Mulungia', email='augusta@saurimo.ao', senha='1234', papel='moderador'),
-            Usuario(nome='Rafael Mussumari', email='rafael@saurimo.ao', senha='1234', papel='moderador'),
+            Usuario(nome='Alberto Baptista', email='alberto@saurimo.ao', senha=_hash_senha('240520'), papel='admin'),
+            Usuario(nome='Augusta Mulungia', email='augusta@saurimo.ao', senha=_hash_senha('1234'), papel='moderador'),
+            Usuario(nome='Rafael Mussumari', email='rafael@saurimo.ao', senha=_hash_senha('1234'), papel='moderador'),
         ])
     else:
         Usuario.query.filter_by(nome='Alberto Baptista', senha='1234').delete()
         for u in Usuario.query.filter((Usuario.papel == 'admin') | (Usuario.nome == 'admin')).all():
             u.nome = 'Alberto Baptista'
             u.email = 'alberto@saurimo.ao'
-            u.senha = '240520'
+            u.senha = _hash_senha('240520')
             u.papel = 'admin'
         if not Usuario.query.filter_by(papel='admin').first():
-            db.session.add(Usuario(nome='Alberto Baptista', email='alberto@saurimo.ao', senha='240520', papel='admin'))
+            db.session.add(Usuario(nome='Alberto Baptista', email='alberto@saurimo.ao', senha=_hash_senha('240520'), papel='admin'))
     if Fonte.query.count() == 0:
         db.session.add_all([
             Fonte(url='https://facebook.com/groups/saurimo', nome='Juventude Saurimo', tipo='API'),
             Fonte(url='https://facebook.com/groups/lundasul', nome='Lunda-Sul Geral', tipo='API'),
         ])
     if Giria.query.count() == 0:
-        db.session.add_all([
-            Giria(termo='mucolesse sonhi curi atxu essue', significado='Vai embora daqui (rude)', tipo='ofensivo', nivel='critico'),
-            Giria(termo='kamba dia bunda', significado='Expressão de desprezo grave', tipo='ofensivo', nivel='critico'),
-            Giria(termo='mbua', significado='Cão (comparação ofensiva grave)', tipo='ofensivo', nivel='critico'),
-            Giria(termo='mulemba', significado='Ofensa racial relacionada a cor', tipo='ofensivo', nivel='critico'),
-            Giria(termo='cucaujola', significado='Pessoa sem valor, inútil', tipo='ofensivo', nivel='alto'),
-            Giria(termo='cutxuala-phula', significado='Expressão depreciativa grave', tipo='ofensivo', nivel='alto'),
-            Giria(termo='mukua', significado='Pessoa ignorante', tipo='ofensivo', nivel='alto'),
-            Giria(termo='quinda', significado='Ofensa sobre cabelo/aparência', tipo='ofensivo', nivel='alto'),
-            Giria(termo='ngulu', significado='Porco (comparação ofensiva)', tipo='ofensivo', nivel='alto'),
-            Giria(termo='sukuata', significado='Calar-se (forma rude)', tipo='ofensivo', nivel='alto'),
-            Giria(termo='tunda', significado='Sair daqui (expulsão)', tipo='ofensivo', nivel='alto'),
-            Giria(termo='mbuji', significado='Bode (comparação pejorativa)', tipo='ofensivo', nivel='alto'),
-            Giria(termo='kizua', significado='Mentiroso, enganador', tipo='ofensivo', nivel='medio'),
-            Giria(termo='canhota', significado='Pessoa de má índole', tipo='ofensivo', nivel='medio'),
-            Giria(termo='mujimbista', significado='Pessoa que espalha boatos', tipo='ofensivo', nivel='medio'),
-            Giria(termo='kamba di kanimbo', significado='Amigo traidor', tipo='ofensivo', nivel='medio'),
-            Giria(termo='xiyowa', significado='Pessoa ingénua, tola', tipo='ofensivo', nivel='medio'),
-            Giria(termo='buzi', significado='Cabra (comparação ofensiva)', tipo='ofensivo', nivel='medio'),
-            Giria(termo='kilapanga', significado='Pessoa que gosta de confusão', tipo='ofensivo', nivel='medio'),
-            Giria(termo='quibuca', significado='Pessoa que não cumpre promessas', tipo='ofensivo', nivel='baixo'),
-            Giria(termo='kibukula', significado='Pessoa que fala demais', tipo='ofensivo', nivel='baixo'),
-            Giria(termo='txiwela', significado='Pessoa fraca, medrosa', tipo='ofensivo', nivel='baixo'),
-            Giria(termo='cangundo', significado='Pessoa desajeitada', tipo='ofensivo', nivel='baixo'),
-            Giria(termo='mussua', significado='Pessoa suja, mal cuidada', tipo='ofensivo', nivel='baixo'),
-            Giria(termo='muxiluanda', significado='Regionalismo pejorativo', tipo='ofensivo', nivel='baixo'),
-            Giria(termo='kisungu', significado='Branco/estrangeiro (p. pejorativo)', tipo='ofensivo', nivel='baixo'),
-            Giria(termo='kamba', significado='Amigo, camarada', tipo='neutro', nivel='neutro'),
-            Giria(termo='mbamba', significado='Amigo verdadeiro', tipo='neutro', nivel='neutro'),
-            Giria(termo='sota', significado='Amigo próximo, parceiro', tipo='neutro', nivel='neutro'),
-            Giria(termo='kota', significado='Mais velho, sênior', tipo='neutro', nivel='neutro'),
-            Giria(termo='mutu', significado='Pessoa, indivíduo', tipo='neutro', nivel='neutro'),
-            Giria(termo='kwanza', significado='Dinheiro, moeda', tipo='neutro', nivel='neutro'),
-            Giria(termo='tchilar', significado='Relaxar, descontrair', tipo='neutro', nivel='neutro'),
-            Giria(termo='bumbar', significado='Trabalhar', tipo='neutro', nivel='neutro'),
-            Giria(termo='cumbar', significado='Acompanhar', tipo='neutro', nivel='neutro'),
-            Giria(termo='bassula', significado='Conversar, bater papo', tipo='neutro', nivel='neutro'),
-            Giria(termo='majimbo', significado='Problema, confusão', tipo='neutro', nivel='neutro'),
-            Giria(termo='muxima', significado='Coração, pessoa querida', tipo='neutro', nivel='neutro'),
-            Giria(termo='nzambi', significado='Deus', tipo='neutro', nivel='neutro'),
-            Giria(termo='paxi', significado='Paz, trégua', tipo='neutro', nivel='neutro'),
-            Giria(termo='vamba', significado='Andar, passear', tipo='neutro', nivel='neutro'),
-            Giria(termo='mwangana', significado='Rei, chefe tradicional', tipo='neutro', nivel='neutro'),
-            Giria(termo='muamba', significado='Comida tradicional', tipo='neutro', nivel='neutro'),
-            Giria(termo='funge', significado='Comida típica', tipo='neutro', nivel='neutro'),
-            Giria(termo='calulu', significado='Prato de peixe típico', tipo='neutro', nivel='neutro'),
-            Giria(termo='ngoma', significado='Tambor, festa tradicional', tipo='neutro', nivel='neutro'),
-            Giria(termo='cacimbo', significado='Nevoeiro, estação seca', tipo='neutro', nivel='neutro'),
-            Giria(termo='jinguba', significado='Amendoim', tipo='neutro', nivel='neutro'),
-            Giria(termo='baião', significado='Dança tradicional', tipo='neutro', nivel='neutro'),
-        ])
+        import json, os
+        _dict_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data', 'local_dictionary.json')
+        _girias = []
+        if os.path.exists(_dict_path):
+            try:
+                with open(_dict_path, 'r', encoding='utf-8') as _f:
+                    _data = json.load(_f)
+                for _termo, _info in _data.items():
+                    _girias.append(Giria(
+                        termo=_termo,
+                        significado=_info.get('significado', ''),
+                        tipo='ofensivo' if _info.get('ofensivo') else 'neutro',
+                        nivel=_info.get('nivel', 'medio')
+                    ))
+            except:
+                pass
+        if not _girias:
+            _girias = [
+                Giria(termo='mbua', significado='Cão (ofensa)', tipo='ofensivo', nivel='critico'),
+                Giria(termo='cucaujola', significado='Pessoa sem valor', tipo='ofensivo', nivel='alto'),
+                Giria(termo='kamba', significado='Amigo', tipo='neutro', nivel='neutro'),
+            ]
+        db.session.add_all(_girias)
     db.session.commit()
     return jsonify({'message': 'Dados iniciais carregados com sucesso'})
 

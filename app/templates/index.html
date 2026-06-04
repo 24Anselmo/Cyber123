@@ -165,7 +165,29 @@
         </main>
     </div>
 
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+var socket = io();
+socket.on('connect', function() { console.log('WebSocket conectado'); });
+socket.on('novo_alerta', function(data) {
+    console.log('Novo alerta:', data);
+    if (Notification.permission === 'granted') {
+        new Notification('Novo Alerta de Cyberbullying!', {
+            body: data.classificacao + ' (' + data.confianca.toFixed(1) + '%) - ' + data.texto,
+            icon: '/static/logo.png'
+        });
+    }
+    carregarTudo();
+});
+socket.on('alerta_resolvido', function(data) {
+    console.log('Alerta resolvido:', data);
+    carregarTudo();
+});
+if ('Notification' in window) {
+    Notification.requestPermission();
+}
+    </script>
     <script>document.documentElement.dataset.papel = '{{ session.get("papel", "moderador") }}';</script>
 </body>
 </html>

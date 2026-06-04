@@ -1,10 +1,13 @@
 import os
 import sys
+import bcrypt
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
+from flask_socketio import SocketIO
 
 db = SQLAlchemy()
+socketio = SocketIO()
 
 def create_app(db_path=None):
     flask_app = Flask(__name__)
@@ -28,6 +31,7 @@ def create_app(db_path=None):
     }
     
     CORS(flask_app)
+    socketio.init_app(flask_app, cors_allowed_origins="*")
     db.init_app(flask_app)
     
     with flask_app.app_context():
@@ -42,9 +46,23 @@ def create_app(db_path=None):
                 db.session.commit()
         except:
             pass
+        # migration: hash existing plaintext passwords
+        try:
+            from sqlalchemy import text
+            rows = db.session.execute(text("SELECT id, senha FROM usuarios")).fetchall()
+            for row in rows:
+                if row.senha and not row.senha.startswith('$2'):
+                    hashed = bcrypt.hashpw(row.senha.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+                    db.session.execute(text("UPDATE usuarios SET senha=:s WHERE id=:i"), {'s': hashed, 'i': row.id})
+            db.session.commit()
+        except:
+            pass
     
     with flask_app.app_context():
         from app.routes import bp
         flask_app.register_blueprint(bp)
+    
+    with flask_app.app_context():
+        from app import socket_events
     
     return flask_app

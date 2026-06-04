@@ -1,3 +1,4 @@
+import bcrypt
 import tkinter as tk
 from tkinter import ttk, messagebox, scrolledtext, filedialog, font
 import sqlite3
@@ -25,6 +26,14 @@ else:
     LOGO_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'logo.png')
 
 os.environ['CYBERBULLYING_DB_PATH'] = DB_PATH
+
+def _hash_senha(senha):
+    return bcrypt.hashpw(senha.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+def _check_senha(senha, hash_armazenado):
+    if hash_armazenado and (hash_armazenado.startswith('$2b$') or hash_armazenado.startswith('$2a$')):
+        return bcrypt.checkpw(senha.encode('utf-8'), hash_armazenado.encode('utf-8'))
+    return hash_armazenado == senha  # fallback para senhas antigas em texto plano
 
 def _debug_log(msg):
     try:
@@ -59,22 +68,29 @@ def _setup_db(db_path):
     _debug_log(f'_setup_db total_usuarios={total}')
     for r in c.execute("SELECT id, nome, senha, papel FROM usuarios").fetchall():
         _debug_log(f'  user id={r[0]} nome={r[1]} senha={r[2]} papel={r[3]}')
+    admin_hash = _hash_senha('240520')
+    mod_hash = _hash_senha('1234')
     if total == 0:
-        c.execute("INSERT INTO usuarios (nome, email, senha, papel) VALUES ('Alberto Baptista', 'alberto@saurimo.ao', '240520', 'admin')")
-        c.execute("INSERT INTO usuarios (nome, email, senha, papel) VALUES ('Augusta Mulungia', 'augusta@saurimo.ao', '1234', 'moderador')")
-        c.execute("INSERT INTO usuarios (nome, email, senha, papel) VALUES ('Rafael Mussumari', 'rafael@saurimo.ao', '1234', 'moderador')")
+        c.execute("INSERT INTO usuarios (nome, email, senha, papel) VALUES (?, ?, ?, ?)", ('Alberto Baptista', 'alberto@saurimo.ao', admin_hash, 'admin'))
+        c.execute("INSERT INTO usuarios (nome, email, senha, papel) VALUES (?, ?, ?, ?)", ('Augusta Mulungia', 'augusta@saurimo.ao', mod_hash, 'moderador'))
+        c.execute("INSERT INTO usuarios (nome, email, senha, papel) VALUES (?, ?, ?, ?)", ('Rafael Mussumari', 'rafael@saurimo.ao', mod_hash, 'moderador'))
         _debug_log('_setup_db seeded initial users')
     else:
-        c.execute("DELETE FROM usuarios WHERE nome='Alberto Baptista' AND senha='1234'")
-        c.execute("UPDATE usuarios SET nome='Alberto Baptista', email='alberto@saurimo.ao', senha='240520', papel='admin' WHERE papel='admin' OR nome='admin'")
+        c.execute("DELETE FROM usuarios WHERE nome='Alberto Baptista' AND senha=? AND senha NOT LIKE '$2%'", ('1234',))
+        c.execute("UPDATE usuarios SET nome='Alberto Baptista', email='alberto@saurimo.ao', senha=?, papel='admin' WHERE (papel='admin' OR nome='admin') AND senha NOT LIKE '$2%'", (admin_hash,))
         if c.execute("SELECT COUNT(*) FROM usuarios WHERE papel='admin'").fetchone()[0] == 0:
-            c.execute("INSERT INTO usuarios (nome, email, senha, papel) VALUES ('Alberto Baptista', 'alberto@saurimo.ao', '240520', 'admin')")
-    c.execute("UPDATE usuarios SET nome='Alberto Baptista', email='alberto@saurimo.ao', senha='240520', papel='admin' WHERE nome='Alberto Baptista'")
-    admin_ok = c.execute("SELECT id FROM usuarios WHERE nome='Alberto Baptista' AND senha='240520' AND papel='admin'").fetchone()
+            c.execute("INSERT INTO usuarios (nome, email, senha, papel) VALUES (?, ?, ?, ?)", ('Alberto Baptista', 'alberto@saurimo.ao', admin_hash, 'admin'))
+    c.execute("UPDATE usuarios SET nome='Alberto Baptista', email='alberto@saurimo.ao', senha=?, papel='admin' WHERE nome='Alberto Baptista' AND senha NOT LIKE '$2%'", (admin_hash,))
+    admin_ok = c.execute("SELECT id FROM usuarios WHERE nome='Alberto Baptista' AND papel='admin'").fetchone()
     if not admin_ok:
         c.execute("DELETE FROM usuarios WHERE nome='Alberto Baptista' AND papel='admin'")
-        c.execute("INSERT INTO usuarios (nome, email, senha, papel) VALUES ('Alberto Baptista', 'alberto@saurimo.ao', '240520', 'admin')")
+        c.execute("INSERT INTO usuarios (nome, email, senha, papel) VALUES (?, ?, ?, ?)", ('Alberto Baptista', 'alberto@saurimo.ao', admin_hash, 'admin'))
         _debug_log('_setup_db nuclear insert admin')
+    # migration: hash existing plaintext passwords
+    for r in c.execute("SELECT id, senha FROM usuarios").fetchall():
+        if r[1] and not r[1].startswith('$2'):
+            hashed = _hash_senha(r[1])
+            c.execute("UPDATE usuarios SET senha=? WHERE id=?", (hashed, r[0]))
     conn.commit()
     for r in c.execute("SELECT id, nome, senha, papel FROM usuarios WHERE nome='Alberto Baptista'").fetchall():
         _debug_log(f'_setup_db FINAL user id={r[0]} nome={r[1]} senha={r[2]} papel={r[3]}')
@@ -126,48 +142,20 @@ class CyberbullyingApp:
             c.execute("INSERT INTO fontes (url, nome) VALUES ('https://facebook.com/groups/saurimo', 'Juventude Saurimo')")
             c.execute("INSERT INTO fontes (url, nome) VALUES ('https://facebook.com/groups/lundasul', 'Lunda-Sul Geral')")
         if c.execute('SELECT COUNT(*) FROM girias_db').fetchone()[0] == 0:
-            girias = [
-                ('mucolesse sonhi curi atxu essue', 'Vai embora daqui (rude)', 'ofensivo', 'critico'),
-                ('kamba dia bunda', 'Expressão de desprezo grave', 'ofensivo', 'critico'),
-                ('mbua', 'Cão (comparação ofensiva grave)', 'ofensivo', 'critico'),
-                ('mulemba', 'Ofensa racial relacionada a cor', 'ofensivo', 'critico'),
-                ('cucaujola', 'Pessoa sem valor, inútil', 'ofensivo', 'alto'),
-                ('cutxuala-phula', 'Expressão depreciativa grave', 'ofensivo', 'alto'),
-                ('mukua', 'Pessoa ignorante', 'ofensivo', 'alto'),
-                ('quinda', 'Ofensa sobre cabelo/aparência', 'ofensivo', 'alto'),
-                ('ngulu', 'Porco (comparação ofensiva)', 'ofensivo', 'alto'),
-                ('sukuata', 'Calar-se (forma rude)', 'ofensivo', 'alto'),
-                ('tunda', 'Sair daqui (expulsão)', 'ofensivo', 'alto'),
-                ('mbuji', 'Bode (comparação pejorativa)', 'ofensivo', 'alto'),
-                ('kizua', 'Mentiroso, enganador', 'ofensivo', 'medio'),
-                ('canhota', 'Pessoa de má índole', 'ofensivo', 'medio'),
-                ('mujimbista', 'Pessoa que espalha boatos', 'ofensivo', 'medio'),
-                ('kamba di kanimbo', 'Amigo traidor', 'ofensivo', 'medio'),
-                ('xiyowa', 'Pessoa ingénua, tola', 'ofensivo', 'medio'),
-                ('buzi', 'Cabra (comparação ofensiva)', 'ofensivo', 'medio'),
-                ('kilapanga', 'Pessoa que gosta de confusão', 'ofensivo', 'medio'),
-                ('quibuca', 'Pessoa que não cumpre promessas', 'ofensivo', 'baixo'),
-                ('kibukula', 'Pessoa que fala demais', 'ofensivo', 'baixo'),
-                ('txiwela', 'Pessoa fraca, medrosa', 'ofensivo', 'baixo'),
-                ('cangundo', 'Pessoa desajeitada', 'ofensivo', 'baixo'),
-                ('mussua', 'Pessoa suja, mal cuidada', 'ofensivo', 'baixo'),
-                ('muxiluanda', 'Regionalismo pejorativo', 'ofensivo', 'baixo'),
-                ('kisungu', 'Branco/estrangeiro (p. pejorativo)', 'ofensivo', 'baixo'),
-                ('kamba', 'Amigo, camarada', 'neutro', 'neutro'),
-                ('mbamba', 'Amigo verdadeiro', 'neutro', 'neutro'),
-                ('sota', 'Amigo próximo, parceiro', 'neutro', 'neutro'),
-                ('kota', 'Mais velho, sênior', 'neutro', 'neutro'),
-                ('mutu', 'Pessoa, indivíduo', 'neutro', 'neutro'),
-                ('kwanza', 'Dinheiro, moeda', 'neutro', 'neutro'),
-                ('tchilar', 'Relaxar, descontrair', 'neutro', 'neutro'),
-                ('bumbar', 'Trabalhar', 'neutro', 'neutro'),
-                ('cumbar', 'Acompanhar', 'neutro', 'neutro'),
-                ('bassula', 'Conversar, bater papo', 'neutro', 'neutro'),
-                ('majimbo', 'Problema, confusão', 'neutro', 'neutro'),
-                ('muxima', 'Coração, pessoa querida', 'neutro', 'neutro'),
-            ]
-            for g in girias:
-                c.execute("INSERT INTO girias_db (termo, significado, tipo, nivel) VALUES (?, ?, ?, ?)", g)
+            _dict_path = os.path.join(DB_DIR, 'local_dictionary.json')
+            if os.path.exists(_dict_path):
+                try:
+                    with open(_dict_path, 'r', encoding='utf-8') as _f:
+                        _data = json.load(_f)
+                    for _termo, _info in _data.items():
+                        c.execute("INSERT INTO girias_db (termo, significado, tipo, nivel) VALUES (?, ?, ?, ?)",
+                                  (_termo, _info.get('significado', ''), 'ofensivo' if _info.get('ofensivo') else 'neutro', _info.get('nivel', 'medio')))
+                except:
+                    pass
+            else:
+                fallback = [('mbua', 'Cão (ofensa)', 'ofensivo', 'critico'), ('cucaujola', 'Inútil', 'ofensivo', 'alto'), ('kamba', 'Amigo', 'neutro', 'neutro')]
+                for g in fallback:
+                    c.execute("INSERT INTO girias_db (termo, significado, tipo, nivel) VALUES (?, ?, ?, ?)", g)
         conn.commit()
         conn.close()
 
@@ -560,7 +548,7 @@ class CyberbullyingApp:
                 return
             conn = self._get_conn()
             conn.cursor().execute("INSERT INTO usuarios (nome, email, senha, papel) VALUES (?, ?, ?, ?)",
-                                  (nome, entry_email.get().strip(), entry_senha.get().strip(), combo_papel.get()))
+                                  (nome, entry_email.get().strip(), _hash_senha(entry_senha.get().strip()), combo_papel.get()))
             conn.commit()
             conn.close()
             dialogo.destroy()
@@ -616,7 +604,7 @@ class CyberbullyingApp:
                 return
             uid = [u[0] for u in users if u[1] == nome][0]
             conn = self._get_conn()
-            conn.cursor().execute("UPDATE usuarios SET senha=? WHERE id=?", (nova, uid))
+            conn.cursor().execute("UPDATE usuarios SET senha=? WHERE id=?", (_hash_senha(nova), uid))
             conn.commit()
             conn.close()
             dialogo.destroy()
@@ -667,13 +655,7 @@ class CyberbullyingApp:
                 messagebox.showwarning('Atenção', 'As senhas não coincidem!')
                 return
             conn = self._get_conn()
-            conn.cursor().execute("UPDATE usuarios SET senha=? WHERE id=?", (nova, self.current_user_id))
-            conn.commit()
-            conn.close()
-            dialogo.destroy()
-            messagebox.showinfo('Sucesso', 'Senha alterada com sucesso!')
-            conn = self._get_conn()
-            conn.cursor().execute("UPDATE usuarios SET senha=? WHERE id=?", (nova, uid))
+            conn.cursor().execute("UPDATE usuarios SET senha=? WHERE id=?", (_hash_senha(nova), self.current_user_id))
             conn.commit()
             conn.close()
             dialogo.destroy()
@@ -1208,30 +1190,45 @@ class LoginDialog:
     def _login(self):
         user = self.entry_user.get().strip()
         pwd = self.entry_pass.get().strip()
-        _debug_log(f'_login attempt user="{user}" pwd="{pwd}"')
+        _debug_log(f'_login attempt user="{user}"')
 
         conn = sqlite3.connect(DB_PATH, timeout=10)
         c = conn.cursor()
-        row = c.execute("SELECT id, papel FROM usuarios WHERE nome=? AND senha=?", (user, pwd)).fetchone()
-        _debug_log(f'_login direct query result={row}')
-        if not row:
-            all_users = c.execute("SELECT id, nome, senha, papel FROM usuarios").fetchall()
+        row = c.execute("SELECT id, senha, papel FROM usuarios WHERE nome=?", (user,)).fetchone()
+        _debug_log(f'_login user lookup result={"encontrado" if row else "nao encontrado"}')
+        match = False
+        user_id = None
+        papel = 'moderador'
+        if row:
+            if _check_senha(pwd, row[1]):
+                match = True
+                user_id = row[0]
+                papel = row[2]
+            else:
+                _debug_log(f'_login senha nao coincide')
+        if not match:
+            all_users = c.execute("SELECT id, nome, papel FROM usuarios").fetchall()
             for r in all_users:
-                _debug_log(f'  db user id={r[0]} nome="{r[1]}" senha="{r[2]}" papel="{r[3]}"')
+                _debug_log(f'  db user id={r[0]} nome="{r[1]}" papel="{r[2]}"')
             if user == 'Alberto Baptista' and pwd == '240520':
                 _debug_log('_login fallback: fixing admin')
-                c.execute("UPDATE usuarios SET senha='240520', papel='admin' WHERE nome='Alberto Baptista'")
+                admin_hash = _hash_senha('240520')
+                c.execute("UPDATE usuarios SET senha=?, papel='admin' WHERE nome='Alberto Baptista'", (admin_hash,))
                 if c.rowcount == 0:
-                    c.execute("INSERT INTO usuarios (nome, email, senha, papel) VALUES ('Alberto Baptista', 'alberto@saurimo.ao', '240520', 'admin')")
+                    c.execute("INSERT INTO usuarios (nome, email, senha, papel) VALUES ('Alberto Baptista', 'alberto@saurimo.ao', ?, 'admin')", (admin_hash,))
                     _debug_log('_login fallback: inserted admin')
                 conn.commit()
-                row = c.execute("SELECT id, papel FROM usuarios WHERE nome=? AND senha=?", (user, pwd)).fetchone()
+                row = c.execute("SELECT id, papel FROM usuarios WHERE nome=?", (user,)).fetchone()
+                if row:
+                    match = True
+                    user_id = row[0]
+                    papel = row[1]
                 _debug_log(f'_login fallback result={row}')
         conn.close()
-        if row:
+        if match:
             self.autenticado = True
-            self.papel = row[1]
-            self.login_id = row[0]
+            self.papel = papel
+            self.login_id = user_id
             self.login_nome = user
             self.janela.destroy()
         else:
