@@ -3,14 +3,11 @@ __pycache__/
 *.pyc
 *.pyo
 *.egg-info/
-dist/
 build/
-*.spec
 venv/
 .venv/
 
-# Banco de dados
-data/cyberbullying.db
+# Banco de dados (logs apenas)
 data/debug.log
 
 # IDE
@@ -22,8 +19,5 @@ data/debug.log
 # Windows
 Thumbs.db
 
-# Documentos exportados
-*.pdf
-
-# Test DB
+# Test DB (não subir bancos de teste)
 *test_override*
