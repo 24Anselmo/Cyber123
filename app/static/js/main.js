@@ -278,6 +278,24 @@ async function gerarRelatorio() {
     } catch (e) { console.error('Erro ao gerar relatório:', e); }
 }
 
+async function baixarRelatorioPDF() {
+    try {
+        const resp = await fetch('/api/relatorio/pdf', {
+            headers: getHeaders()
+        });
+        if (!resp.ok) { const e = await resp.json(); alert(e.erro || 'Erro'); return; }
+        const blob = await resp.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'relatorio_cyberbullying.pdf';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    } catch (e) { console.error('Erro ao baixar PDF:', e); alert('Erro ao gerar PDF'); }
+}
+
 async function inicializarDados() {
     if (!confirm('Inicializar dados padrão?')) return;
     try { await api('/api/inicializar', { method: 'POST' }); carregarTudo(); alert('Dados inicializados!'); }

@@ -12,3 +12,4 @@ gunicorn==21.2.0
 transformers>=4.30.0
 torch>=2.0.0
 eventlet>=0.41.0
+fpdf2>=2.7.0

@@ -394,3 +394,61 @@ def gerar_relatorio():
         'por_fonte': [{'fonte': f, 'total': t} for f, t in por_fonte],
         'data_geracao': datetime.now().isoformat()
     })
+
+@bp.route('/api/relatorio/pdf', methods=['GET'])
+@login_required
+@admin_required
+def gerar_relatorio_pdf():
+    from fpdf import FPDF
+    from sqlalchemy import func
+    import io
+
+    total_analises = Analise.query.count()
+    por_classificacao = db.session.query(Analise.classificacao, func.count(Analise.id).label('total'))\
+        .group_by(Analise.classificacao).all()
+    por_fonte = db.session.query(Fonte.nome, func.count(Analise.id).label('total'))\
+        .join(Comentario, Fonte.id == Comentario.fonte_id)\
+        .join(Analise, Comentario.id == Analise.comentario_id)\
+        .group_by(Fonte.nome).all()
+
+    pdf = FPDF('P', 'mm', 'A4')
+    pdf.add_page()
+    pdf.set_font('Helvetica', 'B', 18)
+    pdf.cell(0, 12, 'Relatorio do Sistema', align='C', new_x='LMARGIN', new_y='NEXT')
+    pdf.set_font('Helvetica', '', 10)
+    pdf.cell(0, 7, 'Deteccao de Cyberbullying - Saurimo, Angola', align='C', new_x='LMARGIN', new_y='NEXT')
+    pdf.cell(0, 7, f'Gerado em: {datetime.now().strftime("%d/%m/%Y %H:%M")}', align='C', new_x='LMARGIN', new_y='NEXT')
+    pdf.ln(10)
+
+    pdf.set_font('Helvetica', 'B', 13)
+    pdf.cell(0, 10, 'Resumo Geral', new_x='LMARGIN', new_y='NEXT')
+    pdf.set_font('Helvetica', '', 11)
+    pdf.cell(0, 7, f'Total de analises realizadas: {total_analises}', new_x='LMARGIN', new_y='NEXT')
+    pdf.ln(5)
+
+    pdf.set_font('Helvetica', 'B', 13)
+    pdf.cell(0, 10, 'Por Classificacao', new_x='LMARGIN', new_y='NEXT')
+    pdf.set_font('Helvetica', '', 11)
+    for c, t in por_classificacao:
+        bar_w = min(int(t) * 5, 150) if total_analises > 0 else 0
+        pdf.cell(0, 7, f'{c}: {t}', new_x='LMARGIN', new_y='NEXT')
+    pdf.ln(5)
+
+    if por_fonte:
+        pdf.set_font('Helvetica', 'B', 13)
+        pdf.cell(0, 10, 'Por Fonte', new_x='LMARGIN', new_y='NEXT')
+        pdf.set_font('Helvetica', '', 11)
+        for f, t in por_fonte:
+            pdf.cell(0, 7, f'{f}: {t}', new_x='LMARGIN', new_y='NEXT')
+
+    pdf.ln(10)
+    pdf.set_font('Helvetica', 'I', 9)
+    pdf.cell(0, 5, 'Relatorio gerado automaticamente pelo Sistema de Detecao de Cyberbullying', align='C', new_x='LMARGIN', new_y='NEXT')
+
+    buf = io.BytesIO()
+    pdf.output(buf, 'F')
+    buf.seek(0)
+    return buf.read(), 200, {
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': 'attachment; filename="relatorio_cyberbullying.pdf"'
+    }
