@@ -9,3 +9,13 @@ offline/dist/
 __pycache__/
 *.pyc
 .pytest_cache/
+
+# Logs
+*.log
+
+# SQLite WAL
+*.db-shm
+*.db-wal
+
+# Debug spec
+*Debug.spec

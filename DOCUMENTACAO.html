@@ -24,14 +24,13 @@
   .toc { background: #f3f4f6; padding: 1rem 1.5rem; border-radius: 8px; margin: 1rem 0; }
   .toc a { color: #2563eb; text-decoration: none; }
   .toc a:hover { text-decoration: underline; }
-  .cred { background: #f0fdf4; border-left: 4px solid #16a34a; padding: 0.75rem 1rem; border-radius: 0 6px 6px 0; margin: 1rem 0; }
-  .cred table { margin: 0.5rem 0; }
+  .tag { display: inline-block; background: #dbeafe; color: #1e40af; padding: 0.1rem 0.5rem; border-radius: 10px; font-size: 0.75rem; font-weight: 600; margin: 0.1rem; }
   @media print { body { padding: 0; font-size: 12px; } h1 { font-size: 1.5rem; } h2 { font-size: 1.2rem; } }
 </style>
 </head>
 <body>
 
-<h1>🛡️ Sistema de Deteção de Cyberbullying — Documentação Técnica</h1>
+<h1>Sistema de Deteção de Cyberbullying — Documentação Técnica</h1>
 <p class="subtitle">
   <strong>Instituto Superior Politécnico da Lunda-Sul — Saurimo, Angola</strong><br>
   PP1 — Engenharia de Software I + Sistemas Operacionais | 2026
@@ -39,338 +38,373 @@
 
 <hr>
 
-<h2>Índice</h2>
+<h2>Indice</h2>
 <div class="toc">
 <ol>
-  <li><a href="#s1">Visão Geral</a></li>
+  <li><a href="#s1">Visao Geral</a></li>
   <li><a href="#s2">Arquitetura do Sistema</a></li>
-  <li><a href="#s3">Instalação e Configuração</a></li>
-  <li><a href="#s4">Guia de Utilização</a></li>
+  <li><a href="#s3">Instalacao e Configuracao</a></li>
+  <li><a href="#s4">Guia de Utilizacao</a></li>
   <li><a href="#s5">API REST</a></li>
-  <li><a href="#s6">Motor de Deteção</a></li>
-  <li><a href="#s7">Base de Dados</a></li>
-  <li><a href="#s8">Gestão de Utilizadores e Permissões</a></li>
-  <li><a href="#s9">Empacotamento (EXE)</a></li>
-  <li><a href="#s10">Manutenção e Resolução de Problemas</a></li>
-  <li><a href="#s11">Credenciais</a></li>
-  <li><a href="#s12">Equipa de Desenvolvimento</a></li>
+  <li><a href="#s6">Motor de Detecao</a></li>
+  <li><a href="#s7">Classificador BERT</a></li>
+  <li><a href="#s8">WebSockets e Notificacoes</a></li>
+  <li><a href="#s9">Base de Dados</a></li>
+  <li><a href="#s10">Gestao de Utilizadores e Permissoes</a></li>
+  <li><a href="#s11">Testes Automatizados</a></li>
+  <li><a href="#s12">Empacotamento (EXE)</a></li>
+  <li><a href="#s13">Manutencao e Resolucao de Problemas</a></li>
+  <li><a href="#s14">Credenciais</a></li>
+  <li><a href="#s15">Equipa de Desenvolvimento</a></li>
 </ol>
 </div>
 
 <hr>
 
-<h2 id="s1">1. Visão Geral</h2>
-<p>Sistema multiplataforma para deteção de cyberbullying em texto, desenvolvido para o Instituto Superior Politécnico da Lunda-Sul (Saurimo, Angola). Combina uma interface <strong>web</strong> (Flask) e uma aplicação <strong>desktop</strong> (Tkinter) que partilham a mesma base de dados SQLite e o mesmo motor de deteção enriquecido.</p>
+<h2 id="s1">1. Visao Geral</h2>
+<p>Sistema multiplataforma para detecao de cyberbullying em texto, desenvolvido para o Instituto Superior Politecnico da Lunda-Sul (Saurimo, Angola). Combina uma interface <strong>web</strong> (Flask), uma aplicacao <strong>desktop</strong> (Tkinter) e um executavel autonomo (<strong>EXE --onefile</strong>) que partilham a mesma base de dados SQLite e o mesmo motor de detecao enriquecido com dicionario de girias regionais angolanas.</p>
 
 <h3>1.1 Funcionalidades Principais</h3>
 <table>
-  <tr><th>Funcionalidade</th><th>Descrição</th></tr>
-  <tr><td>Análise de texto em tempo real</td><td>Classifica como Crítico / Ofensivo / Suspeito / Neutro</td></tr>
-  <tr><td>Dicionário alargado</td><td>181+ palavras ofensivas + 40+ gírias regionais angolanas</td></tr>
-  <tr><td>Classificação por níveis</td><td>crítico, alto, médio, baixo, neutro</td></tr>
-  <tr><td>Alertas inteligentes</td><td>Threshold ≥ 50% de confiança (Suspeito+)</td></tr>
-  <tr><td>Interface web e desktop</td><td>Mesma BD partilhada, mesma experiência</td></tr>
-  <tr><td>Servidor web embutido</td><td>Desktop inicia Flask automaticamente após login</td></tr>
-  <tr><td>Autenticação</td><td>Login protegido em ambos os sistemas</td></tr>
-  <tr><td>Controlo de acesso</td><td>Papéis: admin e moderador</td></tr>
-  <tr><td>Auto-save</td><td>Toda análise é guardada automaticamente na BD</td></tr>
-  <tr><td>Exportação de relatórios</td><td>CSV e TXT</td></tr>
-  <tr><td>Report ao Facebook</td><td>Cópia do alerta para área de transferência</td></tr>
+  <tr><th>Funcionalidade</th><th>Descricao</th></tr>
+  <tr><td>Analise de texto em tempo real</td><td>Classifica como Critico / Ofensivo / Suspeito / Neutro</td></tr>
+  <tr><td>Dicionario alargado</td><td>170+ palavras ofensivas + 80+ girias regionais angolanas (Lunda-Sul)</td></tr>
+  <tr><td>Classificacao por niveis</td><td>critico, alto, medio, baixo, neutro</td></tr>
+  <tr><td>Classificador BERT</td><td>distilbert-base-multilingual-cased como complemento ao motor rule-based</td></tr>
+  <tr><td>Alertas inteligentes</td><td>Threshold >= 50% de confianca (Suspeito+)</td></tr>
+  <tr><td>Notificacoes em tempo real</td><td>WebSockets (Flask-SocketIO) com notificacoes nativas no browser</td></tr>
+  <tr><td>Interface web e desktop</td><td>Mesma BD partilhada, mesma experiencia</td></tr>
+  <tr><td>Autenticacao RBAC</td><td>Login protegido com senhas hasheadas (bcrypt); papeis: admin / moderador</td></tr>
+  <tr><td>Auto-save</td><td>Toda analise e guardada automaticamente na BD</td></tr>
+  <tr><td>Exportacao de relatorios</td><td>CSV, TXT e PDF</td></tr>
+  <tr><td>Monitorizacao Facebook</td><td>Integracao com Graph API para monitorizar paginas</td></tr>
+  <tr><td>Testes automatizados</td><td>15 testes pytest (deteccao, API, autenticacao)</td></tr>
+  <tr><td>Executavel autonomo</td><td>EXE --onefile (PyInstaller) sem dependencias externas</td></tr>
+  <tr><td>Repositorio GitHub</td><td>https://github.com/24Anselmo/Cyber123</td></tr>
 </table>
 
 <h3>1.2 Tecnologias</h3>
 <table>
   <tr><th>Componente</th><th>Tecnologia</th></tr>
-  <tr><td>Servidor web</td><td>Flask 3.0 (Python)</td></tr>
-  <tr><td>ORM</td><td>SQLAlchemy + SQLite</td></tr>
+  <tr><td>Servidor web</td><td>Flask 3.0 + Flask-SocketIO</td></tr>
+  <tr><td>ORM</td><td>SQLAlchemy + SQLite (WAL mode)</td></tr>
   <tr><td>Frontend</td><td>HTML5, CSS3, JavaScript (vanilla)</td></tr>
   <tr><td>Interface desktop</td><td>Tkinter (Python)</td></tr>
-  <tr><td>Motor de deteção</td><td>Rule-based (dicionário + pesos)</td></tr>
+  <tr><td>Motor de detecao</td><td>Rule-based (dicionario + pesos) + BERT</td></tr>
+  <tr><td>Autenticacao</td><td>bcrypt (senhas hasheadas)</td></tr>
+  <tr><td>WebSockets</td><td>Flask-SocketIO + eventlet / threading</td></tr>
+  <tr><td>BERT</td><td>transformers + torch (distilbert-base-multilingual-cased)</td></tr>
+  <tr><td>PDF</td><td>fpdf2</td></tr>
   <tr><td>CORS</td><td>Flask-CORS</td></tr>
-  <tr><td>Empacotamento</td><td>PyInstaller (executável Windows)</td></tr>
-  <tr><td>Base de dados</td><td>SQLite 3 (WAL mode)</td></tr>
+  <tr><td>Testes</td><td>pytest</td></tr>
+  <tr><td>Empacotamento</td><td>PyInstaller (EXE --onefile / --onedir)</td></tr>
+  <tr><td>Repositorio</td><td>Git + GitHub</td></tr>
 </table>
 
 <hr>
 
 <h2 id="s2">2. Arquitetura do Sistema</h2>
 
-<h3>2.1 Estrutura de Diretórios</h3>
+<h3>2.1 Estrutura de Diretorios</h3>
 <pre><code>cyberbullying_detector/
-├── app/                                # Aplicação Web (Flask)
-│   ├── __init__.py                     # Factory, BD, CORS, migração
-│   ├── models.py                       # Modelos SQLAlchemy
-│   ├── routes.py                       # 24 endpoints REST + login
-│   ├── detector.py                     # Motor de deteção (singleton)
-│   ├── static/
-│   │   ├── css/style.css               # Estilos responsivos
-│   │   ├── js/main.js                  # Lógica frontend completa
-│   │   └── logo.png                    # Logótipo
-│   └── templates/
-│       ├── index.html                  # Dashboard principal
-│       └── login.html                  # Página de autenticação
-├── offline/                            # Aplicação Desktop
-│   ├── desktop_app.py                  # UI Tkinter + servidor web embutido
-│   ├── logo.png                        # Logótipo desktop
-│   ├── iniciar.bat                     # Atalho de execução
-│   ├── CyberbullyingDetector.spec      # Configuração PyInstaller
-│   └── dist/
-│       └── CyberbullyingDetector.exe   # Executável compilado
-├── data/                               # Dados persistentes
-│   ├── cyberbullying.db                # Base de dados SQLite
-│   ├── local_dictionary.json           # Dicionário local (fallback)
-│   └── debug.log                       # Log de diagnóstico
-├── DOCUMENTACAO.html                   # Documentação (HTML)
-├── DOCUMENTACAO.md                     # Documentação (Markdown)
-├── README.md                           # Manual rápido
-├── requirements.txt                    # Dependências Python
-└── run.py                              # Ponto de entrada web</code></pre>
++-- app/                                # Aplicacao Web (Flask)
+|   +-- __init__.py                     # Factory, BD, CORS, SocketIO, migracao
+|   +-- models.py                       # Modelos SQLAlchemy
+|   +-- routes.py                       # Endpoints REST + login + PDF
+|   +-- detector.py                     # Motor de detecao (singleton rule-based)
+|   +-- bert_classifier.py              # Classificador BERT (distilbert)
+|   +-- facebook_api.py                 # Monitorizacao Facebook Graph API
+|   +-- socket_events.py                # Eventos WebSocket
+|   +-- static/
+|   |   +-- css/style.css               # Estilos responsivos
+|   |   +-- js/main.js                  # Logica frontend completa
+|   |   +-- logo.png                    # Logotipo
+|   +-- templates/
+|       +-- index.html                  # Dashboard principal
+|       +-- login.html                  # Pagina de autenticacao
++-- offline/                            # Aplicacao Desktop
+|   +-- desktop_app.py                  # UI Tkinter
+|   +-- logo.png                        # Logotipo desktop
+|   +-- CyberbullyingDetector.spec      # Configuracao PyInstaller
+|   +-- dist/
+|       +-- CyberbullyingDetector.exe   # Executavel compilado
++-- data/                               # Dados persistentes
+|   +-- cyberbullying.db                # Base de dados SQLite
+|   +-- local_dictionary.json           # Dicionario local (80+ girias)
+|   +-- debug.log                       # Log de diagnostico
++-- tests/                              # Testes automatizados
+|   +-- conftest.py                     # Fixture BD temporario
+|   +-- test_detector.py                # Testes do motor de detecao (6)
+|   +-- test_api.py                     # Testes dos endpoints REST (6)
+|   +-- test_auth.py                    # Testes de autenticacao (3)
++-- DOCUMENTACAO.html                   # Documentacao (HTML)
++-- README.md                           # Manual rapido
++-- README_SO.md                        # Comandos SO
++-- requirements.txt                    # Dependencias Python
++-- run.py                              # Ponto de entrada web</code></pre>
 
 <h3>2.2 Fluxo de Funcionamento</h3>
-<pre><code>                    ┌─────────────────────────┐
-                    │   Base de Dados SQLite    │
-                    │   data/cyberbullying.db   │
-                    └──────────┬──────────────┘
-                               │
-              ┌────────────────┼────────────────┐
-              │                │                │
-              ▼                ▼                ▼
-       ┌──────────┐    ┌──────────────┐    ┌──────────┐
-       │  Desktop  │    │  Servidor    │    │  Web     │
-       │ (Tkinter) │◄──►│  Web Flask   │◄──►│ (Browser)│
-       │  .exe     │    │  (embutido)  │    │localhost │
-       └──────────┘    └──────────────┘    │ :5000    │
-                                            └──────────┘</code></pre>
+<pre><code>                    +---------------------+
+                    | Base de Dados SQLite  |
+                    | data/cyberbullying.db |
+                    +----------+----------+
+                               |
+              +----------------+----------------+
+              |                |                |
+              v                v                v
+       +----------+     +------------+     +----------+
+       |  Desktop  |<--->|  Servidor  |<--->|    Web    |
+       | (Tkinter) |     | Web Flask  |     | (Browser) |
+       |   .exe    |     | :5000      |     | localhost  |
+       +----------+     +------------+     +----------+</code></pre>
 <ul>
   <li>Desktop e Web partilham o mesmo ficheiro <code>cyberbullying.db</code></li>
-  <li>Desktop inicia servidor web Flask automaticamente como thread daemon</li>
-  <li>Motor de deteção (<code>app/detector.py</code>) é o mesmo para ambas as interfaces</li>
-  <li>Toda a análise é auto-salva na BD antes de ser exibida</li>
+  <li>O EXE desktop abre o browser para o utilizador aceder a interface web</li>
+  <li>Motor de detecao (<code>app/detector.py</code>) e o mesmo para ambas as interfaces</li>
+  <li>Classificador BERT (<code>app/bert_classifier.py</code>) e opcional (lazy loading)</li>
+  <li>Toda a analise e auto-salva na BD antes de ser exibida</li>
+  <li>Notificacoes em tempo real via WebSockets (Flask-SocketIO)</li>
 </ul>
 
-<h3>2.3 Autenticação e Sessão</h3>
+<h3>2.3 Autenticacao e Sessao</h3>
 <ul>
-  <li><strong>Web</strong>: sessão Flask armazenada em cookie assinado (<code>secret_key</code>)</li>
-  <li><strong>Desktop</strong>: login verificado localmente via SQLite; <code>user_id</code>, <code>nome</code> e <code>papel</code> passados ao construtor da app</li>
+  <li><strong>Web</strong>: sessao Flask armazenada em cookie assinado (<code>secret_key</code>)</li>
+  <li><strong>Desktop</strong>: login verificado localmente via SQLite com bcrypt; <code>user_id</code>, <code>nome</code> e <code>papel</code> passados ao construtor da app</li>
+  <li><strong>Senhas</strong>: armazenadas com hash bcrypt; migracao automatica de texto plano existente</li>
   <li><strong>Logout (web)</strong>: <code>session.clear()</code> + redirect para <code>/login</code></li>
   <li><strong>Logout (desktop)</strong>: <code>root.destroy()</code> + <code>main()</code> (re-inicia ciclo de login)</li>
-  <li><strong>Timeout</strong>: as sessões web não expiram automaticamente (apenas ao fechar o browser ou clicar Sair)</li>
 </ul>
 
 <hr>
 
-<h2 id="s3">3. Instalação e Configuração</h2>
+<h2 id="s3">3. Instalacao e Configuracao</h2>
 
 <h3>3.1 Requisitos</h3>
 <ul>
   <li>Windows 10/11 ou Linux (Ubuntu 22.04+)</li>
   <li>Python 3.10 ou superior</li>
   <li>pip (gestor de pacotes Python)</li>
+  <li>Git (opcional, para clonar repositorio)</li>
 </ul>
 
-<h3>3.2 Instalação de Dependências</h3>
-<pre><code>cd cyberbullying_detector
-pip install -r requirements.txt</code></pre>
-<p>Conteúdo do <code>requirements.txt</code>:</p>
-<pre><code>flask&gt;=3.0
-flask-sqlalchemy&gt;=3.0
-flask-cors&gt;=4.0</code></pre>
+<h3>3.2 Obter o Projeto</h3>
+<pre><code>git clone https://github.com/24Anselmo/Cyber123.git
+cd cyberbullying_detector</code></pre>
 
-<h3>3.3 Execução</h3>
+<h3>3.3 Instalacao de Dependencias</h3>
+<pre><code>pip install -r requirements.txt</code></pre>
+<p>Conteudo do <code>requirements.txt</code>:</p>
+<pre><code>Flask==3.0.0
+Flask-SQLAlchemy==3.1.1
+Flask-CORS==4.0.0
+Flask-SocketIO==5.6.1
+bcrypt==5.0.0
+scikit-learn==1.3.2
+numpy==1.26.2
+pandas==2.1.3
+requests==2.31.0
+python-dotenv==1.0.0
+gunicorn==21.2.0
+transformers&gt;=4.30.0
+torch&gt;=2.0.0
+eventlet&gt;=0.41.0
+fpdf2&gt;=2.7.0</code></pre>
 
-<h4>Modo Web (Servidor Flask Autónomo)</h4>
+<h3>3.4 Execucao</h3>
+
+<h4>Modo Web (Servidor Flask)</h4>
 <pre><code>python run.py</code></pre>
 <p>Acessar: <a href="http://localhost:5000" target="_blank">http://localhost:5000</a></p>
-<p>O <code>run.py</code> verifica automaticamente se existe uma base de dados em <code>offline/dist/data/cyberbullying.db</code> (criada pelo EXE). Se existir, utiliza essa para manter consistência.</p>
 
-<h4>Modo Desktop (Tkinter + Servidor Web Embutido)</h4>
+<h4>Modo Desktop (Tkinter)</h4>
 <pre><code>cd offline
 python desktop_app.py</code></pre>
-<p>Ou clicar duas vezes em <code>iniciar.bat</code>. Após login, o servidor web é iniciado automaticamente em <a href="http://localhost:5000" target="_blank">http://localhost:5000</a>.</p>
+<p>Apos login, o EXE abre o browser para a interface web (http://localhost:5000). E necessario ter o servidor web a correr (<code>python run.py</code>) ou usar o modo web incorporado.</p>
 
-<h4>Executável Compilado</h4>
-<pre><code>offline/dist/CyberbullyingDetector.exe</code></pre>
+<h4>Executavel Compilado (Recomendado)</h4>
+<p>Clique duas vezes em <code>offline/dist/CyberbullyingDetector.exe</code>.</p>
 
-<h3>3.4 Configuração</h3>
+<h3>3.5 Configuracao</h3>
 <table>
-  <tr><th>Variável de Ambiente</th><th>Descrição</th><th>Padrão</th></tr>
+  <tr><th>Variavel de Ambiente</th><th>Descricao</th><th>Padrao</th></tr>
   <tr><td><code>CYBERBULLYING_DB_PATH</code></td><td>Caminho completo para a BD SQLite</td><td><code>data/cyberbullying.db</code></td></tr>
 </table>
-<p>Se a variável não for definida, o caminho é calculado automaticamente:</p>
+<p>Se a variavel nao for definida, o caminho e calculado automaticamente:</p>
 <ul>
-  <li><strong>Script</strong>: diretório raiz do projeto + <code>/data/cyberbullying.db</code></li>
-  <li><strong>EXE</strong>: diretório do executável + <code>/data/cyberbullying.db</code></li>
+  <li><strong>Script</strong>: diretorio raiz do projeto + <code>/data/cyberbullying.db</code></li>
+  <li><strong>EXE</strong>: procura recursivamente desde o diretorio do executavel ate a raiz</li>
 </ul>
 
 <hr>
 
-<h2 id="s4">4. Guia de Utilização</h2>
+<h2 id="s4">4. Guia de Utilizacao</h2>
 
 <h3>4.1 Interface Web</h3>
 <p>Acesso: <a href="http://localhost:5000" target="_blank">http://localhost:5000</a></p>
 
 <p><strong>Barra lateral (sidebar):</strong></p>
 <table>
-  <tr><th>Botão</th><th>Visível para</th><th>Descrição</th></tr>
-  <tr><td>🔍 Análise</td><td>Todos</td><td>Inserir texto e classificar</td></tr>
-  <tr><td>🚨 Alertas</td><td>Todos</td><td>Alertas pendentes (≥ 50% confiança)</td></tr>
-  <tr><td>📊 Análises</td><td>Todos</td><td>Histórico de análises</td></tr>
-  <tr><td>📰 Fontes</td><td>Todos</td><td>Gerir fontes Facebook</td></tr>
-  <tr><td>📚 Dicionário</td><td>Todos</td><td>Gerir gírias locais</td></tr>
-  <tr><td>👥 Usuários</td><td>Admin</td><td>Gerir utilizadores</td></tr>
-  <tr><td>📄 Relatório</td><td>Admin</td><td>Estatísticas e exportação</td></tr>
-  <tr><td>⚙️ Inicializar</td><td>Admin</td><td>Carregar dados iniciais</td></tr>
-  <tr><td>📥 Importar Testes</td><td>Admin</td><td>Importar 10 comentários de teste</td></tr>
-  <tr><td>🔄 Atualizar</td><td>Todos</td><td>Atualizar todos os dados</td></tr>
-  <tr><td>🔑 Minha Senha</td><td>Todos</td><td>Alterar própria senha</td></tr>
-  <tr><td>🚪 Sair</td><td>Todos</td><td>Terminar sessão</td></tr>
+  <tr><th>Botao</th><th>Visivel para</th><th>Descricao</th></tr>
+  <tr><td>Analise</td><td>Todos</td><td>Inserir texto e classificar</td></tr>
+  <tr><td>Alertas</td><td>Todos</td><td>Alertas pendentes (>= 50% confianca)</td></tr>
+  <tr><td>Analises</td><td>Todos</td><td>Historico de analises</td></tr>
+  <tr><td>Fontes</td><td>Todos</td><td>Gerir fontes Facebook</td></tr>
+  <tr><td>Dicionario</td><td>Todos</td><td>Gerir girias locais</td></tr>
+  <tr><td>Usuarios</td><td>Admin</td><td>Gerir utilizadores</td></tr>
+  <tr><td>Relatorio</td><td>Admin</td><td>Estatisticas e exportacao (CSV, TXT, PDF)</td></tr>
+  <tr><td>Inicializar</td><td>Admin</td><td>Carregar dados iniciais</td></tr>
+  <tr><td>Importar Testes</td><td>Admin</td><td>Importar 10 comentarios de teste</td></tr>
+  <tr><td>Atualizar</td><td>Todos</td><td>Atualizar todos os dados</td></tr>
+  <tr><td>Minha Senha</td><td>Todos</td><td>Alterar propria senha</td></tr>
+  <tr><td>Sair</td><td>Todos</td><td>Terminar sessao</td></tr>
 </table>
 
-<p><strong>Página de Análise:</strong></p>
+<p><strong>Pagina de Analise:</strong></p>
 <ol>
   <li>Digite o texto na caixa de texto</li>
-  <li>Clique "🔍 Analisar" ou pressione <code>Ctrl+Enter</code></li>
-  <li>Veja a classificação, confiança, palavras e gírias detetadas</li>
+  <li>Clique "Analisar" ou pressione <code>Ctrl+Enter</code></li>
+  <li>Veja a classificacao, confianca, palavras e girias detetadas</li>
 </ol>
 
-<p><strong>Página de Alertas:</strong></p>
+<p><strong>Pagina de Alertas:</strong></p>
 <ul>
-  <li>Lista comentários com confiança ≥ 50% ainda não resolvidos</li>
-  <li>Botão ✅ para resolver (marcar como revisto)</li>
-  <li>Botão 📢 para copiar alerta para área de transferência</li>
+  <li>Lista comentarios com confianca >= 50% ainda nao resolvidos</li>
+  <li>Botao para resolver (marcar como revisto)</li>
+  <li>Botao para copiar alerta para area de transferencia (report ao Facebook)</li>
+  <li>Notificacoes nativas do browser ao receber novo alerta via WebSocket</li>
+</ul>
+
+<p><strong>Relatorio PDF:</strong></p>
+<ul>
+  <li>Na pagina Relatorio, clique "Baixar PDF" para descarregar um relatorio completo em PDF</li>
+  <li>O PDF e gerado com fpdf2 e inclui todas as estatisticas do sistema</li>
 </ul>
 
 <h3>4.2 Interface Desktop</h3>
 
-<p><strong>Abas disponíveis (admin):</strong></p>
+<p><strong>Abas disponiveis (admin):</strong></p>
 <table>
-  <tr><th>Aba</th><th>Descrição</th></tr>
-  <tr><td>🔍 Análise</td><td>Analisar texto com resultado detalhado</td></tr>
-  <tr><td>🚨 Alertas</td><td>Alertas pendentes com auto-refresh (5s)</td></tr>
-  <tr><td>📚 Dicionário</td><td>Gerir gírias e níveis</td></tr>
-  <tr><td>📰 Fontes</td><td>Gerir fontes Facebook</td></tr>
-  <tr><td>📄 Relatório</td><td>Estatísticas e exportação CSV/TXT</td></tr>
-  <tr><td>👥 Usuários</td><td>Gerir equipa (admin apenas)</td></tr>
+  <tr><th>Aba</th><th>Descricao</th></tr>
+  <tr><td>Analise</td><td>Analisar texto com resultado detalhado</td></tr>
+  <tr><td>Alertas</td><td>Alertas pendentes com auto-refresh (5s)</td></tr>
+  <tr><td>Dicionario</td><td>Gerir girias e niveis</td></tr>
+  <tr><td>Fontes</td><td>Gerir fontes Facebook</td></tr>
+  <tr><td>Relatorio</td><td>Estatisticas e exportacao CSV/TXT</td></tr>
+  <tr><td>Usuarios</td><td>Gerir equipa (admin apenas)</td></tr>
 </table>
-<p><strong>Abas disponíveis (moderador):</strong> Todas exceto Relatório e Usuários.</p>
-
-<p><strong>Barra de status (inferior):</strong></p>
-<ul>
-  <li>🔑 Alterar Senha — alterar a própria senha</li>
-  <li>🌐 Web: localhost:5000 — clique para abrir navegador</li>
-  <li>🚪 Sair — terminar sessão</li>
-</ul>
+<p><strong>Abas disponiveis (moderador):</strong> Todas exceto Relatorio e Usuarios.</p>
 
 <p><strong>Atalhos de teclado:</strong></p>
 <ul>
   <li><code>Ctrl+Enter</code> — analisar texto rapidamente</li>
 </ul>
 
-<h3>4.3 Gestão de Utilizadores (Admin)</h3>
+<h3>4.3 Gestao de Utilizadores (Admin)</h3>
 
 <p><strong>Criar utilizador:</strong></p>
 <ol>
-  <li>Aba Usuários → botão "➕ Novo Usuário"</li>
+  <li>Aba Usuarios -> botao "Novo Usuario"</li>
   <li>Preencher Nome, Email, Senha, Papel (admin/moderador)</li>
-  <li>Clicar "💾 Salvar"</li>
+  <li>Clicar "Salvar"</li>
 </ol>
 
 <p><strong>Alterar senha de outro utilizador:</strong></p>
 <ol>
-  <li>Aba Usuários → selecionar utilizador na lista</li>
-  <li>Clicar "🔑 Alterar Senha"</li>
+  <li>Aba Usuarios -> selecionar utilizador na lista</li>
+  <li>Clicar "Alterar Senha"</li>
   <li>Escolher novo utilizador e nova senha</li>
 </ol>
 
-<p><strong>Alterar própria senha:</strong></p>
+<p><strong>Alterar propria senha:</strong></p>
 <ul>
-  <li>Web: sidebar → "🔑 Minha Senha"</li>
-  <li>Desktop: barra de status → "👤 Alterar Senha"</li>
+  <li>Web: sidebar -> "Minha Senha"</li>
+  <li>Desktop: barra de status -> "Alterar Senha"</li>
 </ul>
 
 <p><strong>Remover utilizador:</strong></p>
 <ol>
-  <li>Aba Usuários → selecionar utilizador</li>
-  <li>Clicar "🗑️ Remover"</li>
+  <li>Aba Usuarios -> selecionar utilizador</li>
+  <li>Clicar "Remover"</li>
 </ol>
 
 <hr>
 
 <h2 id="s5">5. API REST</h2>
-<p>Todas as rotas (exceto <code>/login</code> e <code>/logout</code>) requerem autenticação por sessão. Retornam <code>401 Unauthorized</code> se não autenticado. Rotas marcadas como <strong>Admin</strong> requerem <code>papel='admin'</code>.</p>
+<p>Todas as rotas (exceto <code>/login</code> e <code>/logout</code>) requerem autenticacao por sessao. Retornam <code>401 Unauthorized</code> se nao autenticado. Rotas marcadas como <strong>Admin</strong> requerem <code>papel='admin'</code>.</p>
 
-<h3>5.1 Autenticação</h3>
+<h3>5.1 Autenticacao</h3>
 <table>
-  <tr><th>Método</th><th>Rota</th><th>Acesso</th><th>Descrição</th></tr>
-  <tr><td>GET</td><td><code>/login</code></td><td>Público</td><td>Página de login</td></tr>
-  <tr><td>POST</td><td><code>/login</code></td><td>Público</td><td>Autenticar (<code>username</code>, <code>password</code>)</td></tr>
-  <tr><td>GET</td><td><code>/logout</code></td><td>Público</td><td>Terminar sessão</td></tr>
+  <tr><th>Metodo</th><th>Rota</th><th>Acesso</th><th>Descricao</th></tr>
+  <tr><td>GET</td><td><code>/login</code></td><td>Publico</td><td>Pagina de login</td></tr>
+  <tr><td>POST</td><td><code>/login</code></td><td>Publico</td><td>Autenticar (<code>username</code>, <code>password</code>)</td></tr>
+  <tr><td>GET</td><td><code>/logout</code></td><td>Publico</td><td>Terminar sessao</td></tr>
 </table>
 
-<h3>5.2 Dashboard e Estatísticas</h3>
+<h3>5.2 Dashboard e Estatisticas</h3>
 <table>
-  <tr><th>Método</th><th>Rota</th><th>Acesso</th><th>Descrição</th></tr>
-  <tr><td>GET</td><td><code>/</code></td><td>Autenticado</td><td>Página principal (dashboard)</td></tr>
-  <tr><td>GET</td><td><code>/api/estatisticas</code></td><td>Autenticado</td><td>Estatísticas gerais do sistema</td></tr>
-  <tr><td>GET</td><td><code>/api/alertas</code></td><td>Autenticado</td><td>Alertas pendentes (confiança ≥ 50%, não resolvidos)</td></tr>
-  <tr><td>GET</td><td><code>/api/analises</code></td><td>Autenticado</td><td>Últimas 100 análises com detalhes</td></tr>
-  <tr><td>POST</td><td><code>/api/analises/&lt;id&gt;/resolver</code></td><td>Autenticado</td><td>Marcar análise como resolvida</td></tr>
+  <tr><th>Metodo</th><th>Rota</th><th>Acesso</th><th>Descricao</th></tr>
+  <tr><td>GET</td><td><code>/</code></td><td>Autenticado</td><td>Pagina principal (dashboard)</td></tr>
+  <tr><td>GET</td><td><code>/api/estatisticas</code></td><td>Autenticado</td><td>Estatisticas gerais do sistema</td></tr>
+  <tr><td>GET</td><td><code>/api/alertas</code></td><td>Autenticado</td><td>Alertas pendentes (confianca >= 50%, nao resolvidos)</td></tr>
+  <tr><td>GET</td><td><code>/api/analises</code></td><td>Autenticado</td><td>Ultimas 100 analises com detalhes</td></tr>
+  <tr><td>POST</td><td><code>/api/analises/&lt;id&gt;/resolver</code></td><td>Autenticado</td><td>Marcar analise como resolvida</td></tr>
 </table>
 
-<h3>5.3 Comentários</h3>
+<h3>5.3 Comentarios</h3>
 <table>
-  <tr><th>Método</th><th>Rota</th><th>Acesso</th><th>Descrição</th></tr>
-  <tr><td>GET</td><td><code>/api/comentarios</code></td><td>Autenticado</td><td>Últimos 100 comentários</td></tr>
-  <tr><td>POST</td><td><code>/api/comentarios</code></td><td>Autenticado</td><td>Adicionar comentário + análise automática</td></tr>
+  <tr><th>Metodo</th><th>Rota</th><th>Acesso</th><th>Descricao</th></tr>
+  <tr><td>GET</td><td><code>/api/comentarios</code></td><td>Autenticado</td><td>Ultimos 100 comentarios</td></tr>
+  <tr><td>POST</td><td><code>/api/comentarios</code></td><td>Autenticado</td><td>Adicionar comentario + analise automatica</td></tr>
 </table>
 
-<h3>5.4 Deteção</h3>
+<h3>5.4 Detecao</h3>
 <table>
-  <tr><th>Método</th><th>Rota</th><th>Acesso</th><th>Descrição</th></tr>
+  <tr><th>Metodo</th><th>Rota</th><th>Acesso</th><th>Descricao</th></tr>
   <tr><td>POST</td><td><code>/api/detectar</code></td><td>Autenticado</td><td>Analisar texto (<code>{"texto": "..."}</code>). Guarda na BD.</td></tr>
 </table>
 
 <h3>5.5 Fontes</h3>
 <table>
-  <tr><th>Método</th><th>Rota</th><th>Acesso</th><th>Descrição</th></tr>
+  <tr><th>Metodo</th><th>Rota</th><th>Acesso</th><th>Descricao</th></tr>
   <tr><td>GET</td><td><code>/api/fontes</code></td><td>Autenticado</td><td>Listar fontes Facebook</td></tr>
   <tr><td>POST</td><td><code>/api/fontes</code></td><td>Autenticado</td><td>Adicionar fonte</td></tr>
   <tr><td>DELETE</td><td><code>/api/fontes/&lt;id&gt;</code></td><td>Admin</td><td>Remover fonte</td></tr>
 </table>
 
-<h3>5.6 Dicionário</h3>
+<h3>5.6 Dicionario</h3>
 <table>
-  <tr><th>Método</th><th>Rota</th><th>Acesso</th><th>Descrição</th></tr>
-  <tr><td>GET</td><td><code>/api/dicionario</code></td><td>Autenticado</td><td>Listar gírias</td></tr>
-  <tr><td>POST</td><td><code>/api/dicionario</code></td><td>Autenticado</td><td>Adicionar gíria</td></tr>
-  <tr><td>DELETE</td><td><code>/api/dicionario/&lt;id&gt;</code></td><td>Admin</td><td>Remover gíria</td></tr>
+  <tr><th>Metodo</th><th>Rota</th><th>Acesso</th><th>Descricao</th></tr>
+  <tr><td>GET</td><td><code>/api/dicionario</code></td><td>Autenticado</td><td>Listar girias</td></tr>
+  <tr><td>POST</td><td><code>/api/dicionario</code></td><td>Autenticado</td><td>Adicionar giria</td></tr>
+  <tr><td>DELETE</td><td><code>/api/dicionario/&lt;id&gt;</code></td><td>Admin</td><td>Remover giria</td></tr>
 </table>
 
 <h3>5.7 Utilizadores</h3>
 <table>
-  <tr><th>Método</th><th>Rota</th><th>Acesso</th><th>Descrição</th></tr>
+  <tr><th>Metodo</th><th>Rota</th><th>Acesso</th><th>Descricao</th></tr>
   <tr><td>GET</td><td><code>/api/usuarios</code></td><td>Autenticado</td><td>Listar utilizadores</td></tr>
   <tr><td>POST</td><td><code>/api/usuarios</code></td><td>Admin</td><td>Criar utilizador</td></tr>
   <tr><td>DELETE</td><td><code>/api/usuarios/&lt;id&gt;</code></td><td>Admin</td><td>Remover utilizador</td></tr>
   <tr><td>POST</td><td><code>/api/alterar-senha</code></td><td>Admin</td><td>Alterar senha de outro (<code>{"id", "senha"}</code>)</td></tr>
-  <tr><td>POST</td><td><code>/api/minha-senha</code></td><td>Autenticado</td><td>Alterar própria senha (<code>{"senha"}</code>)</td></tr>
+  <tr><td>POST</td><td><code>/api/minha-senha</code></td><td>Autenticado</td><td>Alterar propria senha (<code>{"senha"}</code>)</td></tr>
 </table>
 
-<h3>5.8 Utilitários</h3>
+<h3>5.8 Utilitarios</h3>
 <table>
-  <tr><th>Método</th><th>Rota</th><th>Acesso</th><th>Descrição</th></tr>
-  <tr><td>POST</td><td><code>/api/inicializar</code></td><td>Admin</td><td>Carregar dados iniciais (utilizadores, fontes, gírias)</td></tr>
-  <tr><td>POST</td><td><code>/api/importar-comentarios</code></td><td>Admin</td><td>Importar 10 comentários de teste</td></tr>
-  <tr><td>GET</td><td><code>/api/relatorio</code></td><td>Admin</td><td>Relatório completo agrupado por classificação e fonte</td></tr>
+  <tr><th>Metodo</th><th>Rota</th><th>Acesso</th><th>Descricao</th></tr>
+  <tr><td>GET</td><td><code>/api/relatorio</code></td><td>Admin</td><td>Relatorio completo agrupado por classificacao e fonte</td></tr>
+  <tr><td>GET</td><td><code>/api/relatorio/pdf</code></td><td>Admin</td><td>Download do relatorio em PDF</td></tr>
+  <tr><td>POST</td><td><code>/api/inicializar</code></td><td>Admin</td><td>Carregar dados iniciais (utilizadores, fontes, girias)</td></tr>
+  <tr><td>POST</td><td><code>/api/importar-comentarios</code></td><td>Admin</td><td>Importar 10 comentarios de teste</td></tr>
 </table>
 
-<h3>5.9 Exemplo de Análise</h3>
+<h3>5.9 Exemplo de Analise</h3>
 <pre><code>curl -X POST http://localhost:5000/api/detectar \
   -H "Content-Type: application/json" \
   -d '{"texto": "Vou te matar seu idiota"}'</code></pre>
 <p>Resposta:</p>
 <pre><code>{
-  "classificacao": "Crítico",
+  "classificacao": "Critico",
   "confianca": 95.0,
   "girias": [],
   "palavras": [
@@ -383,144 +417,204 @@ python desktop_app.py</code></pre>
 
 <hr>
 
-<h2 id="s6">6. Motor de Deteção</h2>
+<h2 id="s6">6. Motor de Detecao</h2>
 
 <h3>6.1 Arquitetura</h3>
-<p>O motor (<code>app/detector.py</code>) é um singleton baseado em regras (rule-based), partilhado entre web e desktop. Utiliza:</p>
+<p>O motor (<code>app/detector.py</code>) e um singleton baseado em regras (rule-based), partilhado entre web e desktop. Utiliza:</p>
 <ol>
-  <li><strong>Lista hardcoded (<code>self.pa</code>)</strong>: 181 palavras e expressões ofensivas em português</li>
-  <li><strong>Dicionário local (<code>data/local_dictionary.json</code>)</strong>: termos carregados dinamicamente</li>
-  <li><strong>Gírias da BD (<code>girias_db</code>)</strong>: 40+ gírias regionais da Lunda-Sul</li>
+  <li><strong>Lista hardcoded</strong>: 170+ palavras e expressoes ofensivas em portugues</li>
+  <li><strong>Dicionario local (<code>data/local_dictionary.json</code>)</strong>: 80+ girias regionais angolanas carregadas dinamicamente</li>
+  <li><strong>Girias da BD (<code>girias_db</code>)</strong>: girias adicionadas pelo utilizador</li>
+  <li><strong>Classificador BERT (<code>app/bert_classifier.py</code>)</strong>: complemento opcional</li>
 </ol>
 
-<h3>6.2 Sistema de Pontuação</h3>
+<h3>6.2 Sistema de Pontuacao</h3>
 <table>
   <tr><th>Fator</th><th>Pontos</th></tr>
-  <tr><td>Base (confiança inicial)</td><td>5.0</td></tr>
-  <tr><td>Por palavra/gíria crítica</td><td>+45</td></tr>
-  <tr><td>Por palavra/gíria alta</td><td>+25</td></tr>
-  <tr><td>Por palavra/gíria média</td><td>+15</td></tr>
-  <tr><td>Por palavra/gíria baixa</td><td>+8</td></tr>
-  <tr><td>Bónus crítico (se pelo menos 1 termo crítico detetado)</td><td>+35</td></tr>
-  <tr><td>MAIÚSCULAS (>50% do texto em maiúsculas)</td><td>+10</td></tr>
-  <tr><td>Sinais de exclamação/interrogação</td><td>+2 cada (máx. +10)</td></tr>
-  <tr><td><strong>Máximo</strong></td><td><strong>100</strong></td></tr>
+  <tr><td>Base (confianca inicial)</td><td>5.0</td></tr>
+  <tr><td>Por palavra/giria critica</td><td>+45</td></tr>
+  <tr><td>Por palavra/giria alta</td><td>+25</td></tr>
+  <tr><td>Por palavra/giria media</td><td>+15</td></tr>
+  <tr><td>Por palavra/giria baixa</td><td>+8</td></tr>
+  <tr><td>Bonus critico (se pelo menos 1 termo critico detetado)</td><td>+35</td></tr>
+  <tr><td>MAIUSCULAS (>50% do texto em maiusculas)</td><td>+10</td></tr>
+  <tr><td>Sinais de exclamacao/interrogacao</td><td>+2 cada (max. +10)</td></tr>
+  <tr><td><strong>Maximo</strong></td><td><strong>100</strong></td></tr>
 </table>
 
-<h3>6.3 Thresholds de Classificação</h3>
+<h3>6.3 Thresholds de Classificacao</h3>
 <table>
-  <tr><th>Confiança</th><th>Classificação</th><th>Alerta</th></tr>
-  <tr><td>≥ 90%</td><td>🔴 Crítico</td><td>Sim</td></tr>
-  <tr><td>≥ 70%</td><td>🟠 Ofensivo</td><td>Sim</td></tr>
-  <tr><td>≥ 50%</td><td>🟡 Suspeito</td><td>Sim</td></tr>
-  <tr><td>&lt; 50%</td><td>⚪ Neutro</td><td>Não</td></tr>
+  <tr><th>Confianca</th><th>Classificacao</th><th>Alerta</th></tr>
+  <tr><td>>= 90%</td><td>Critico</td><td>Sim</td></tr>
+  <tr><td>>= 70%</td><td>Ofensivo</td><td>Sim</td></tr>
+  <tr><td>>= 50%</td><td>Suspeito</td><td>Sim</td></tr>
+  <tr><td>< 50%</td><td>Neutro</td><td>Nao</td></tr>
 </table>
 
-<h3>6.4 Nível de Gravidade</h3>
-<p>O <code>nivel_geral</code> é determinado pelo nível mais alto entre todas as palavras e gírias detetadas:</p>
-<pre><code>critico &gt; alto &gt; medio &gt; baixo &gt; neutro</code></pre>
+<h3>6.4 Nivel de Gravidade</h3>
+<p>O <code>nivel_geral</code> e determinado pelo nivel mais alto entre todas as palavras e girias detetadas:</p>
+<pre><code>critico > alto > medio > baixo > neutro</code></pre>
+
+<h3>6.5 Dicionario Local (JSON)</h3>
+<p>Ficheiro: <code>data/local_dictionary.json</code></p>
+<p>Contem 80+ girias regionais de Angola, organizadas por nivel de gravidade:</p>
+<pre><code>{
+  "girias": [
+    {"termo": "kamba", "significado": "amigo", "nivel": "neutro"},
+    {"termo": "mbora", "significado": "vamos embora", "nivel": "neutro"},
+    {"termo": "safado", "significado": "descarado", "nivel": "alto"},
+    {"termo": "muteta", "significado": "pessoa fraca", "nivel": "medio"}
+  ]
+}</code></pre>
+<p>As girias sao carregadas na BD na inicializacao (<code>/api/inicializar</code>), evitando INSERTs hardcoded.</p>
 
 <hr>
 
-<h2 id="s7">7. Base de Dados</h2>
+<h2 id="s7">7. Classificador BERT</h2>
 
-<h3>7.1 Esquema</h3>
+<h3>7.1 Arquitetura</h3>
+<p>O <code>bert_classifier.py</code> implementa um classificador baseado no modelo <code>distilbert-base-multilingual-cased</code> da Hugging Face. Este modelo foi escolhido por:</p>
+<ul>
+  <li>Suportar multiplos idiomas (incluindo portugues e misturas com linguas angolanas)</li>
+  <li>Ser mais leve que o BERT completo (menos parametros, inferencia mais rapida)</li>
+  <li>Nao necessitar de fine-tuning no cenario atual</li>
+</ul>
+
+<h3>7.2 Funcionamento</h3>
+<ol>
+  <li>O modelo e carregado <em>lazy</em> (apenas na primeira chamada a <code>classificar()</code>)</li>
+  <li>O texto e convertido em embeddings usando a saida <code>pooler_output</code> do modelo</li>
+  <li>A classificacao e feita por similaridade de cosseno entre o embedding do texto e embeddings de referencia pre-definidos (ofensivo, neutro)</li>
+  <li>Se o modelo nao carregar (ex.: sem torch/transformers instalados), faz fallback para Neutro com 0% de confianca</li>
+</ol>
+
+<h3>7.3 Integracao</h3>
+<p>O classificador BERT e chamado apos o motor rule-based. Se a confianca do BERT for superior a do motor rule-based, a classificacao final usa o resultado do BERT. Caso contrario, prevalece o resultado rule-based.</p>
+
+<hr>
+
+<h2 id="s8">8. WebSockets e Notificacoes</h2>
+
+<h3>8.1 Arquitetura</h3>
+<p>O sistema utiliza <strong>Flask-SocketIO</strong> para comunicacao em tempo real entre o servidor e os clientes web. O servidor emite eventos WebSocket sempre que um novo alerta e detetado ou resolvido.</p>
+
+<h3>8.2 Eventos</h3>
+<table>
+  <tr><th>Evento</th><th>Direcao</th><th>Descricao</th></tr>
+  <tr><td><code>novo_alerta</code></td><td>servidor -> cliente</td><td>Emitido quando uma analise nova atinge confianca >= 50%</td></tr>
+  <tr><td><code>alerta_resolvido</code></td><td>servidor -> cliente</td><td>Emitido quando um alerta e marcado como resolvido</td></tr>
+</table>
+
+<h3>8.3 Notificacoes no Browser</h3>
+<p>O cliente JavaScript (<code>main.js</code>) escuta eventos SocketIO e exibe notificacoes nativas usando a API <code>Notification</code> do browser:</p>
+<pre><code>socket.on('novo_alerta', function(alerta) {
+    if (Notification.permission === 'granted') {
+        new Notification('Alerta de Cyberbullying', {
+            body: alerta.texto,
+            icon: '/static/logo.png'
+        });
+    }
+});</code></pre>
+
+<h3>8.4 Async Mode</h3>
+<p>O SocketIO e configurado com <code>async_mode='threading'</code> para compatibilidade com o EXE congelado (eventlet falha em ambientes PyInstaller). Em execucao normal com <code>python run.py</code>, usa eventlet para melhor desempenho.</p>
+
+<hr>
+
+<h2 id="s9">9. Base de Dados</h2>
+
+<h3>9.1 Esquema</h3>
 <p><strong>Ficheiro:</strong> <code>data/cyberbullying.db</code><br>
-<strong>Modo:</strong> WAL (Write-Ahead Logging) para concorrência<br>
-<strong>Timeout:</strong> 10 segundos (múltiplas conexões)</p>
+<strong>Modo:</strong> WAL (Write-Ahead Logging) para concorrencia<br>
+<strong>Timeout:</strong> 10 segundos (multiplas conexoes)</p>
 
 <h4>Tabela <code>usuarios</code></h4>
 <table>
-  <tr><th>Coluna</th><th>Tipo</th><th>Padrão</th><th>Descrição</th></tr>
-  <tr><td><code>id</code></td><td>INTEGER PK</td><td></td><td>Identificador único</td></tr>
-  <tr><td><code>nome</code></td><td>TEXT</td><td></td><td>Nome do utilizador</td></tr>
-  <tr><td><code>email</code></td><td>TEXT</td><td></td><td>Email</td></tr>
-  <tr><td><code>senha</code></td><td>TEXT</td><td>'1234'</td><td>Palavra-passe (plaintext, offline)</td></tr>
-  <tr><td><code>papel</code></td><td>TEXT</td><td></td><td>'admin' ou 'moderador'</td></tr>
-  <tr><td><code>avatar</code></td><td>TEXT</td><td>NULL</td><td>(reservado)</td></tr>
+  <tr><th>Coluna</th><th>Tipo</th><th>Descricao</th></tr>
+  <tr><td><code>id</code></td><td>INTEGER PK</td><td>Identificador unico</td></tr>
+  <tr><td><code>nome</code></td><td>TEXT</td><td>Nome do utilizador</td></tr>
+  <tr><td><code>email</code></td><td>TEXT</td><td>Email</td></tr>
+  <tr><td><code>senha</code></td><td>TEXT</td><td>Hash bcrypt da palavra-passe</td></tr>
+  <tr><td><code>papel</code></td><td>TEXT</td><td>'admin' ou 'moderador'</td></tr>
+  <tr><td><code>avatar</code></td><td>TEXT</td><td>(reservado)</td></tr>
 </table>
 
 <h4>Tabela <code>fontes</code></h4>
 <table>
-  <tr><th>Coluna</th><th>Tipo</th><th>Padrão</th><th>Descrição</th></tr>
-  <tr><td><code>id</code></td><td>INTEGER PK</td><td></td><td>Identificador único</td></tr>
-  <tr><td><code>url</code></td><td>TEXT</td><td></td><td>URL da fonte (ex: grupo Facebook)</td></tr>
-  <tr><td><code>nome</code></td><td>TEXT</td><td></td><td>Nome da fonte</td></tr>
-  <tr><td><code>tipo</code></td><td>TEXT</td><td>'API'</td><td>Tipo de fonte</td></tr>
-  <tr><td><code>ativo</code></td><td>INTEGER</td><td>1</td><td>1=ativo, 0=inativo</td></tr>
+  <tr><th>Coluna</th><th>Tipo</th><th>Descricao</th></tr>
+  <tr><td><code>id</code></td><td>INTEGER PK</td><td>Identificador unico</td></tr>
+  <tr><td><code>url</code></td><td>TEXT</td><td>URL da fonte (ex: grupo Facebook)</td></tr>
+  <tr><td><code>nome</code></td><td>TEXT</td><td>Nome da fonte</td></tr>
+  <tr><td><code>tipo</code></td><td>TEXT</td><td>Tipo de fonte ('API', 'manual')</td></tr>
+  <tr><td><code>ativo</code></td><td>INTEGER</td><td>1=ativo, 0=inativo</td></tr>
 </table>
 
 <h4>Tabela <code>comentarios</code></h4>
 <table>
-  <tr><th>Coluna</th><th>Tipo</th><th>Descrição</th></tr>
-  <tr><td><code>id</code></td><td>INTEGER PK</td><td>Identificador único</td></tr>
-  <tr><td><code>fonte_id</code></td><td>INTEGER FK</td><td>Referência à fonte</td></tr>
-  <tr><td><code>texto</code></td><td>TEXT</td><td>Conteúdo do comentário</td></tr>
-  <tr><td><code>autor</code></td><td>TEXT</td><td>Autor do comentário</td></tr>
+  <tr><th>Coluna</th><th>Tipo</th><th>Descricao</th></tr>
+  <tr><td><code>id</code></td><td>INTEGER PK</td><td>Identificador unico</td></tr>
+  <tr><td><code>fonte_id</code></td><td>INTEGER FK</td><td>Referencia a fonte</td></tr>
+  <tr><td><code>texto</code></td><td>TEXT</td><td>Conteudo do comentario</td></tr>
+  <tr><td><code>autor</code></td><td>TEXT</td><td>Autor do comentario</td></tr>
   <tr><td><code>data</code></td><td>TEXT</td><td>Data/hora ISO 8601</td></tr>
 </table>
 
 <h4>Tabela <code>analises</code></h4>
 <table>
-  <tr><th>Coluna</th><th>Tipo</th><th>Padrão</th><th>Descrição</th></tr>
-  <tr><td><code>id</code></td><td>INTEGER PK</td><td></td><td>Identificador único</td></tr>
-  <tr><td><code>comentario_id</code></td><td>INTEGER FK</td><td></td><td>Referência ao comentário</td></tr>
-  <tr><td><code>classificacao</code></td><td>TEXT</td><td></td><td>Crítico/Ofensivo/Suspeito/Neutro</td></tr>
-  <tr><td><code>confianca</code></td><td>REAL</td><td></td><td>Percentagem de confiança (0-100)</td></tr>
-  <tr><td><code>girias</code></td><td>TEXT</td><td></td><td>Gírias detetadas (separadas por vírgula)</td></tr>
-  <tr><td><code>resolvido</code></td><td>INTEGER</td><td>0</td><td>0=pendente, 1=resolvido</td></tr>
-  <tr><td><code>data</code></td><td>TEXT</td><td></td><td>Data/hora ISO 8601</td></tr>
+  <tr><th>Coluna</th><th>Tipo</th><th>Descricao</th></tr>
+  <tr><td><code>id</code></td><td>INTEGER PK</td><td>Identificador unico</td></tr>
+  <tr><td><code>comentario_id</code></td><td>INTEGER FK</td><td>Referencia ao comentario</td></tr>
+  <tr><td><code>classificacao</code></td><td>TEXT</td><td>Critico/Ofensivo/Suspeito/Neutro</td></tr>
+  <tr><td><code>confianca</code></td><td>REAL</td><td>Percentagem de confianca (0-100)</td></tr>
+  <tr><td><code>girias</code></td><td>TEXT</td><td>Girias detetadas (separadas por virgula)</td></tr>
+  <tr><td><code>resolvido</code></td><td>INTEGER</td><td>0=pendente, 1=resolvido</td></tr>
+  <tr><td><code>data</code></td><td>TEXT</td><td>Data/hora ISO 8601</td></tr>
 </table>
 
 <h4>Tabela <code>girias_db</code></h4>
 <table>
-  <tr><th>Coluna</th><th>Tipo</th><th>Padrão</th><th>Descrição</th></tr>
-  <tr><td><code>id</code></td><td>INTEGER PK</td><td></td><td>Identificador único</td></tr>
-  <tr><td><code>termo</code></td><td>TEXT</td><td></td><td>Termo/gíria</td></tr>
-  <tr><td><code>significado</code></td><td>TEXT</td><td></td><td>Significado</td></tr>
-  <tr><td><code>tipo</code></td><td>TEXT</td><td></td><td>'ofensivo' ou 'neutro'</td></tr>
-  <tr><td><code>nivel</code></td><td>TEXT</td><td>'medio'</td><td>Nível de gravidade</td></tr>
+  <tr><th>Coluna</th><th>Tipo</th><th>Descricao</th></tr>
+  <tr><td><code>id</code></td><td>INTEGER PK</td><td>Identificador unico</td></tr>
+  <tr><td><code>termo</code></td><td>TEXT</td><td>Termo/giria</td></tr>
+  <tr><td><code>significado</code></td><td>TEXT</td><td>Significado</td></tr>
+  <tr><td><code>tipo</code></td><td>TEXT</td><td>'ofensivo' ou 'neutro'</td></tr>
+  <tr><td><code>nivel</code></td><td>TEXT</td><td>Nivel de gravidade (critico/alto/medio/baixo/neutro)</td></tr>
 </table>
 
-<h3>7.2 Dados Iniciais (Seed)</h3>
+<h3>9.2 Dados Iniciais (Seed)</h3>
 <p><strong>Utilizadores:</strong></p>
 <table>
-  <tr><th>Nome</th><th>Email</th><th>Senha</th><th>Papel</th></tr>
-  <tr><td>Alberto Baptista</td><td>alberto@saurimo.ao</td><td>240520</td><td>admin</td></tr>
-  <tr><td>Augusta Mulungia</td><td>augusta@saurimo.ao</td><td>1234</td><td>moderador</td></tr>
-  <tr><td>Rafael Mussumari</td><td>rafael@saurimo.ao</td><td>1234</td><td>moderador</td></tr>
+  <tr><th>Nome</th><th>Email</th><th>Senha (hash bcrypt)</th><th>Papel</th></tr>
+  <tr><td>Alberto Baptista</td><td>alberto@saurimo.ao</td><td>bcrypt de 240520</td><td>admin</td></tr>
+  <tr><td>Augusta Mulungia</td><td>augusta@saurimo.ao</td><td>bcrypt de 1234</td><td>moderador</td></tr>
+  <tr><td>Rafael Mussumari</td><td>rafael@saurimo.ao</td><td>bcrypt de 1234</td><td>moderador</td></tr>
 </table>
 <p><strong>Fontes Facebook:</strong> Juventude Saurimo, Lunda-Sul Geral</p>
-<p><strong>Gírias regionais:</strong> 40+ termos nos níveis crítico, alto, médio, baixo e neutro.</p>
+<p><strong>Girias regionais:</strong> 80+ termos lidos de <code>data/local_dictionary.json</code></p>
 
-<h3>7.3 Migração Automática</h3>
-<p>Na primeira execução, o sistema:</p>
+<h3>9.3 Migracao Automatica</h3>
+<p>Na primeira execucao, o sistema:</p>
 <ol>
-  <li>Cria as tabelas se não existirem</li>
-  <li>Adiciona coluna <code>senha</code> se estiver em falta</li>
-  <li>Adiciona coluna <code>nivel</code> à tabela <code>girias_db</code> se estiver em falta</li>
+  <li>Cria as tabelas se nao existirem</li>
+  <li>Adiciona colunas em falta (migracao segura com tratamento de erros)</li>
+  <li>Migra senhas em texto plano para bcrypt automaticamente</li>
   <li>Atualiza o utilizador admin para "Alberto Baptista" / "240520"</li>
   <li>Remove duplicados do utilizador admin antigo</li>
 </ol>
 
 <hr>
 
-<h2 id="s8">8. Gestão de Utilizadores e Permissões</h2>
+<h2 id="s10">10. Gestao de Utilizadores e Permissoes</h2>
 
-<h3>8.1 Papéis (Roles)</h3>
+<h3>10.1 Papeis (Roles)</h3>
 <table>
   <tr><th>Papel</th><th>Acesso</th></tr>
-  <tr><td><code>admin</code></td><td>Todas as funcionalidades, incluindo gestão de utilizadores, relatórios, inicialização</td></tr>
-  <tr><td><code>moderador</code></td><td>Análise, alertas, análises, fontes, dicionário, alterar própria senha</td></tr>
+  <tr><td><code>admin</code></td><td>Todas as funcionalidades, incluindo gestao de utilizadores, relatorios, inicializacao, exportacao PDF</td></tr>
+  <tr><td><code>moderador</code></td><td>Analise, alertas, analises, fontes, dicionario, alterar propria senha</td></tr>
 </table>
 
-<h3>8.2 Controlo de Acesso</h3>
-<p><strong>Web (JavaScript):</strong></p>
-<pre><code>const papel = document.documentElement.dataset.papel || 'moderador';
-if (papel !== 'admin') {
-    document.querySelectorAll('[data-admin]')
-        .forEach(el =&gt; el.style.display = 'none');
-}</code></pre>
+<h3>10.2 Controlo de Acesso</h3>
+<p><strong>Web (JavaScript):</strong> Elementos com atributo <code>data-admin</code> sao ocultados para moderadores.</p>
 <p><strong>Web (Python decorators):</strong></p>
 <pre><code>def admin_required(f):
     @wraps(f)
@@ -529,127 +623,175 @@ if (papel !== 'admin') {
             return jsonify({'erro': 'Acesso negado'}), 403
         return f(*args, **kwargs)
     return decorated</code></pre>
-<p><strong>Desktop:</strong></p>
-<pre><code>if self.papel == 'admin':
-    self.notebook.add(self.tab_relatorio, text='📄 Relatório')
-    self.notebook.add(self.tab_usuarios, text='👥 Usuários')</code></pre>
+<p><strong>Desktop:</strong> Abas de Relatorio e Usuarios sao adicionadas apenas se <code>self.papel == 'admin'</code>.</p>
 
-<h3>8.3 Segurança</h3>
+<h3>10.3 Seguranca</h3>
 <ul>
+  <li><strong>Senhas com bcrypt</strong>: hasheadas com custo 12; migracao automatica de texto plano existente</li>
   <li><strong>Offline-first</strong>: o sistema funciona 100% offline (localhost)</li>
-  <li><strong>Passwords em plaintext</strong>: aceitável para âmbito académico 100% offline</li>
-  <li><strong>Servidor web</strong>: bind a <code>0.0.0.0:5000</code> — acessível apenas na rede local</li>
-  <li><strong>Chave secreta</strong>: hardcoded (<code>SECRET_KEY</code>) — adequado para ambiente controlado</li>
+  <li><strong>Servidor web</strong>: bind a <code>0.0.0.0:5000</code> — acessivel apenas na rede local</li>
+  <li><strong>Chave secreta</strong>: definida no codigo (<code>SECRET_KEY</code>) — adequado para ambiente academico controlado</li>
 </ul>
 
 <hr>
 
-<h2 id="s9">9. Empacotamento (EXE)</h2>
+<h2 id="s11">11. Testes Automatizados</h2>
 
-<h3>9.1 Construir o Executável</h3>
-<pre><code>cd offline
-py -m PyInstaller --onefile --windowed --name CyberbullyingDetector ^
-  --add-data "..\app;app" ^
-  --add-data "logo.png;." ^
-  --add-data "..\data\local_dictionary.json;data" ^
-  desktop_app.py</code></pre>
+<h3>11.1 Estrutura</h3>
+<p>Os testes estao em <code>tests/</code> e utilizam pytest com uma fixture de BD temporaria (<code>conftest.py</code>):</p>
+<pre><code>python -m pytest tests/ -v</code></pre>
 
-<h3>9.2 Ficheiro .spec (alternativa)</h3>
-<pre><code>py -m PyInstaller CyberbullyingDetector.spec</code></pre>
-
-<h3>9.3 Hidden Imports Necessários</h3>
-<p>Incluídos automaticamente no <code>.spec</code>:</p>
-<ul>
-  <li><code>flask</code>, <code>flask_cors</code>, <code>flask_sqlalchemy</code></li>
-  <li><code>sqlite3</code>, <code>json</code>, <code>threading</code>, <code>logging</code></li>
-  <li><code>tkinter</code>, <code>tkinter.ttk</code>, <code>tkinter.messagebox</code>, <code>tkinter.filedialog</code></li>
-  <li><code>datetime</code>, <code>os</code>, <code>sys</code>, <code>re</code>, <code>time</code></li>
-</ul>
-
-<h3>9.4 Executável Compilado</h3>
-<p><strong>Localização:</strong> <code>offline/dist/CyberbullyingDetector.exe</code></p>
-<p>Após execução, cria:</p>
-<ul>
-  <li><code>offline/dist/data/cyberbullying.db</code> — base de dados</li>
-  <li><code>offline/dist/data/debug.log</code> — log de diagnóstico</li>
-  <li>Servidor web em <a href="http://localhost:5000" target="_blank">http://localhost:5000</a></li>
-</ul>
-
-<hr>
-
-<h2 id="s10">10. Manutenção e Resolução de Problemas</h2>
-
-<h3>10.1 Log de Diagnóstico</h3>
-<p>O sistema escreve para <code>data/debug.log</code> (ou <code>offline/dist/data/debug.log</code> no EXE):</p>
-<ul>
-  <li>Estado da BD antes/depois da migração</li>
-  <li>Tentativas de login (utilizador, senha, resultado)</li>
-  <li>Erros de conexão à BD</li>
-  <li>Diagnóstico automático ao iniciar</li>
-</ul>
-
-<h3>10.2 Problemas Comuns</h3>
+<h3>11.2 Testes do Motor de Detecao (<code>test_detector.py</code>)</h3>
 <table>
-  <tr><th>Problema</th><th>Causa Provável</th><th>Solução</th></tr>
-  <tr><td>"Usuário ou senha inválidos"</td><td>BD corrompida ou migração incompleta</td><td>Apagar <code>data/cyberbullying.db</code> e reiniciar</td></tr>
-  <tr><td>"Database is locked"</td><td>Concorrência entre web e desktop</td><td>Aguardar ou reiniciar. WAL mode + timeout 10s</td></tr>
-  <tr><td>Servidor web não inicia no desktop</td><td>Porta 5000 ocupada</td><td>Fechar outras instâncias do Flask</td></tr>
-  <tr><td>EXE não abre</td><td>PyInstaller sem hidden imports</td><td>Recompilar com <code>.spec</code> atualizado</td></tr>
-  <tr><td>Login falha após logout (desktop)</td><td>Thread do web server ainda ativa</td><td>Fechar completamente o EXE e reabrir</td></tr>
+  <tr><th>Teste</th><th>Descricao</th></tr>
+  <tr><td><code>test_texto_neutro</code></td><td>Texto normal -> Neutro com < 50% confianca</td></tr>
+  <tr><td><code>test_texto_critico</code></td><td>Ameaca direta -> Critico com > 90% confianca</td></tr>
+  <tr><td><code>test_texto_ofensivo</code></td><td>Palavrao grave -> Ofensivo com > 70% confianca</td></tr>
+  <tr><td><code>test_texto_suspeito</code></td><td>Palavra media -> Suspeito com > 50% confianca</td></tr>
+  <tr><td><code>test_girias_detetadas</code></td><td>Girias regionais sao detetadas corretamente</td></tr>
+  <tr><td><code>test_maiusculas</code></td><td>Texto em MAIUSCULAS ganha bonus de +10</td></tr>
 </table>
 
-<h3>10.3 Reset Completo</h3>
+<h3>11.3 Testes da API (<code>test_api.py</code>)</h3>
+<table>
+  <tr><th>Teste</th><th>Descricao</th></tr>
+  <tr><td><code>test_login</code></td><td>Login valido retorna 200 e redireciona</td></tr>
+  <tr><td><code>test_detectar</code></td><td>API de detecao retorna classificacao correta</td></tr>
+  <tr><td><code>test_alertas</code></td><td>Endpoint de alertas retorna lista</td></tr>
+  <tr><td><code>test_fontes</code></td><td>CRUD de fontes funciona</td></tr>
+  <tr><td><code>test_dicionario</code></td><td>CRUD de girias funciona</td></tr>
+  <tr><td><code>test_inicializar</code></td><td>Seed data carrega sem erros</td></tr>
+</table>
+
+<h3>11.4 Testes de Autenticacao (<code>test_auth.py</code>)</h3>
+<table>
+  <tr><th>Teste</th><th>Descricao</th></tr>
+  <tr><td><code>test_login_valido</code></td><td>Credenciais corretas -> sessao criada</td></tr>
+  <tr><td><code>test_login_invalido</code></td><td>Senha errada -> 401</td></tr>
+  <tr><td><code>test_logout</code></td><td>Logout limpa sessao e redireciona</td></tr>
+</table>
+
+<hr>
+
+<h2 id="s12">12. Empacotamento (EXE)</h2>
+
+<h3>12.1 Construir o Executavel (--onefile)</h3>
+<pre><code>$env:TCL_LIBRARY = "C:\caminho\para\python\tcl\tcl8.6"
+$env:TK_LIBRARY = "C:\caminho\para\python\tcl\tk8.6"
+cd offline
+py -m PyInstaller --onefile --noconsole --name CyberbullyingDetector ^
+  --add-data "..\app;app" ^
+  --add-data "..\data\local_dictionary.json;data" ^
+  --add-data "logo.png;." ^
+  --hidden-import flask_cors ^
+  --hidden-import flask_socketio ^
+  --hidden-import flask_sqlalchemy ^
+  --hidden-import bcrypt ^
+  --hidden-import fpdf2 ^
+  --hidden-import eventlet ^
+  --hidden-import numpy ^
+  --hidden-import requests ^
+  --collect-all flask_sqlalchemy ^
+  desktop_app.py</code></pre>
+
+<p><strong>Tempo de compilacao:</strong> ~1-2 minutos (--onefile), ~35 segundos (--onedir)</p>
+
+<h3>12.2 Hidden Imports</h3>
+<p>Os seguintes modulos sao explicitamente incluidos para evitar erros em tempo de execucao no EXE compilado:</p>
+<ul>
+  <li><code>flask_cors</code>, <code>flask_socketio</code>, <code>flask_sqlalchemy</code></li>
+  <li><code>bcrypt</code>, <code>fpdf2</code>, <code>eventlet</code>, <code>numpy</code>, <code>requests</code></li>
+  <li><code>sqlalchemy</code>, <code>jinja2</code>, <code>markupsafe</code>, <code>itsdangerous</code></li>
+  <li><code>werkzeug</code>, <code>click</code>, <code>flask</code></li>
+  <li><code>tkinter</code>, <code>tkinter.ttk</code>, <code>tkinter.messagebox</code>, <code>tkinter.filedialog</code></li>
+</ul>
+
+<h3>12.3 Variaveis TCL_LIBRARY / TK_LIBRARY</h3>
+<p>Estas variaveis de ambiente sao <strong>obrigatorias</strong> no Python 3.14 + PyInstaller para evitar o erro:</p>
+<pre><code>FileNotFoundError: Tcl data directory "..._internal\_tcl_data" not found.</code></pre>
+<p>Apontam para os diretorios Tcl/Tk dentro da instalacao Python.</p>
+
+<h3>12.4 Executavel Compilado</h3>
+<p><strong>Localizacao:</strong> <code>offline/dist/CyberbullyingDetector.exe</code> (35 MB)<br>
+<strong>Modo:</strong> --noconsole (sem janela de terminal)</p>
+<p>Na primeira execucao, cria a BD partilhada no diretorio do projeto (procura recursivamente por <code>data/cyberbullying.db</code>).</p>
+
+<hr>
+
+<h2 id="s13">13. Manutencao e Resolucao de Problemas</h2>
+
+<h3>13.1 Log de Diagnostico</h3>
+<p>O sistema escreve para <code>data/debug.log</code>:</p>
+<ul>
+  <li>Estado da BD antes/depois da migracao</li>
+  <li>Tentativas de login (utilizador, senha, resultado)</li>
+  <li>Erros de conexao a BD</li>
+  <li>Diagnostico automatico ao iniciar</li>
+</ul>
+
+<h3>13.2 Problemas Comuns</h3>
+<table>
+  <tr><th>Problema</th><th>Causa Provavel</th><th>Solucao</th></tr>
+  <tr><td>"Usuario ou senha invalidos"</td><td>BD corrompida ou migracao incompleta</td><td>Apagar <code>data/cyberbullying.db</code> e reiniciar</td></tr>
+  <tr><td>"Database is locked"</td><td>Concorrencia entre web e desktop</td><td>Aguardar ou reiniciar. WAL mode + timeout 10s</td></tr>
+  <tr><td>Servidor web nao inicia</td><td>Porta 5000 ocupada</td><td>Fechar outras instancias do Flask</td></tr>
+  <tr><td>EXE nao abre</td><td>TCL_LIBRARY nao definido na compilacao</td><td>Recompilar com as variaveis de ambiente Tcl/Tk</td></tr>
+  <tr><td>Login falha apos logout (desktop)</td><td>Thread do servidor web ainda ativa</td><td>Fechar completamente o EXE e reabrir</td></tr>
+  <tr><td>Invalid async_mode specified</td><td>eventlet incompativel com EXE congelado</td><td>Usar <code>async_mode='threading'</code> no SocketIO()</td></tr>
+  <tr><td>Modulo nao encontrado no EXE</td><td>Hidden import em falta</td><td>Adicionar <code>--hidden-import</code> ao PyInstaller</td></tr>
+</table>
+
+<h3>13.3 Reset Completo</h3>
 <p>Para reiniciar o sistema do zero:</p>
 <pre><code>rem Apagar base de dados
 del data\cyberbullying.db
-rem ou (se usar EXE)
-del offline\dist\data\cyberbullying.db
 
 rem Apagar log
 del data\debug.log
 
 rem Reiniciar
-python run.py
-rem ou
-offline\dist\CyberbullyingDetector.exe</code></pre>
-<p>Na primeira execução, o sistema recria a BD e insere os dados iniciais.</p>
+python run.py</code></pre>
+<p>Na primeira execucao, o sistema recria a BD e insere os dados iniciais automaticamente.</p>
 
-<h3>10.4 Verificação de Integridade</h3>
-<p>No desktop, o diagnóstico automático corre ao iniciar (<code>_diagnose_db()</code>) e regista:</p>
+<h3>13.4 Verificacao de Integridade</h3>
+<p>No desktop, o diagnostico automatico corre ao iniciar e regista no log:</p>
 <ul>
   <li>Caminho da BD</li>
   <li>Se o ficheiro existe</li>
-  <li>Número de análises, comentários e alertas</li>
-  <li>Últimas 5 análises</li>
+  <li>Numero de analises, comentarios e alertas</li>
+  <li>Ultimas 5 analises</li>
 </ul>
 
 <hr>
 
-<h2 id="s11">11. Credenciais</h2>
+<h2 id="s14">14. Credenciais</h2>
 <table>
   <tr><th>Sistema</th><th>Utilizador</th><th>Senha</th><th>Papel</th></tr>
   <tr><td>Admin</td><td>Alberto Baptista</td><td>240520</td><td>admin</td></tr>
   <tr><td>Moderador</td><td>Augusta Mulungia</td><td>1234</td><td>moderador</td></tr>
   <tr><td>Moderador</td><td>Rafael Mussumari</td><td>1234</td><td>moderador</td></tr>
 </table>
+<p>As senhas sao armazenadas com hash bcrypt. Na primeira execucao, senhas em texto plano sao migradas automaticamente.</p>
+
+<p><strong>Repositorio GitHub:</strong> <a href="https://github.com/24Anselmo/Cyber123" target="_blank">https://github.com/24Anselmo/Cyber123</a></p>
 
 <hr>
 
-<h2 id="s12">12. Equipa de Desenvolvimento</h2>
+<h2 id="s15">15. Equipa de Desenvolvimento</h2>
 <p><strong>Disciplina:</strong> PP1 — Engenharia de Software I + Sistemas Operacionais</p>
 <table>
   <tr><th>Membro</th><th>Papel no Projeto</th></tr>
   <tr><td>Alberto Baptista</td><td>Desenvolvedor principal</td></tr>
-  <tr><td>Augusta Mulungia</td><td>Documentação e testes</td></tr>
-  <tr><td>Rafael Mussumari</td><td>Interface e validação</td></tr>
+  <tr><td>Augusta Mulungia</td><td>Documentacao e testes</td></tr>
+  <tr><td>Rafael Mussumari</td><td>Interface e validacao</td></tr>
 </table>
-<p><strong>Instituição:</strong> Instituto Superior Politécnico da Lunda-Sul (IPLS)<br>
-<strong>Localização:</strong> Saurimo, Angola<br>
+<p><strong>Instituicao:</strong> Instituto Superior Politecnico da Lunda-Sul (IPLS)<br>
+<strong>Localizacao:</strong> Saurimo, Angola<br>
 <strong>Ano Letivo:</strong> 2026</p>
 
 <hr>
 <p style="text-align:center; color:#6b7280; font-size:0.85rem;">
-  <em>Documentação gerada em Junho de 2026. Para mais informações, contactar a equipa de desenvolvimento.</em>
+  <em>Documentacao gerada em Junho de 2026. Para mais informacoes, contactar a equipa de desenvolvimento ou consultar o repositorio GitHub.</em>
 </p>
 
 </body>
