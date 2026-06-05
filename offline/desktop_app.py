@@ -13,7 +13,17 @@ from datetime import datetime
 
 def _project_root():
     if getattr(sys, 'frozen', False):
-        return os.path.dirname(os.path.abspath(sys.executable))
+        exe_dir = os.path.dirname(os.path.abspath(sys.executable))
+        dirs = [exe_dir]
+        parent = os.path.dirname(exe_dir)
+        while parent and parent != dirs[-1]:
+            dirs.append(parent)
+            parent = os.path.dirname(parent)
+        for d in dirs:
+            db = os.path.join(d, 'data', 'cyberbullying.db')
+            if os.path.exists(db):
+                return d
+        return exe_dir
     return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 BASE_DIR = _project_root()
