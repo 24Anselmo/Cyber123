@@ -1251,8 +1251,21 @@ class LoginDialog:
         return self.autenticado, getattr(self, 'papel', 'moderador'), getattr(self, 'login_id', None), getattr(self, 'login_nome', None)
 
 
+def _iniciar_servidor_web():
+    try:
+        import app
+        from app import create_app, socketio
+        os.environ['CYBERBULLYING_DB_PATH'] = DB_PATH
+        web_app = create_app()
+        socketio.run(web_app, host='0.0.0.0', port=5000, debug=False, allow_unsafe_werkzeug=True)
+    except Exception as e:
+        _debug_log(f'Erro servidor web: {e}')
+
 def main():
     _setup_db(DB_PATH)
+    t = threading.Thread(target=_iniciar_servidor_web, daemon=True)
+    t.start()
+    webbrowser.open('http://localhost:5000')
     login = LoginDialog()
     ok, papel, login_id, login_nome = login.run()
     if ok:
