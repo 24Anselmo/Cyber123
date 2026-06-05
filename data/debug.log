@@ -1,0 +1,288 @@
+2026-06-04T15:48:19.363614 | _setup_db START path=C:\Users\AJESF\OneDrive\Documents\New folder\cyberbullying_detector\data\cyberbullying.db
+2026-06-04T15:48:19.365169 | _setup_db total_usuarios=3
+2026-06-04T15:48:19.365533 |   user id=1 nome=Alberto Baptista senha=$2b$12$4DNCFwrS1GpLzWfqYlmWPu5HUeMd1KMofuVk104sfmUWsz7SNGdU2 papel=admin
+2026-06-04T15:48:19.366096 |   user id=2 nome=Augusta Mulungia senha=$2b$12$amEu34KAXOMh/givIv6dPeS63xWv5/fl14OQnK5CeOr0wHLS/OPMC papel=moderador
+2026-06-04T15:48:19.366439 |   user id=3 nome=Rafael Mussumari senha=$2b$12$I7wQ/OruCK4SgbWYNAz9s.OoGrWe2iKauxtjE34rGptM0EXpfqc4a papel=moderador
+2026-06-04T15:48:19.813471 | _setup_db FINAL user id=1 nome=Alberto Baptista senha=$2b$12$4DNCFwrS1GpLzWfqYlmWPu5HUeMd1KMofuVk104sfmUWsz7SNGdU2 papel=admin
+2026-06-04T15:48:19.814446 | _setup_db END
+2026-06-04T15:48:31.530448 | _login attempt user="Alberto Baptista"
+2026-06-04T15:48:31.532990 | _login user lookup result=encontrado
+2026-06-04T15:48:31.857093 | _setup_db START path=C:\Users\AJESF\OneDrive\Documents\New folder\cyberbullying_detector\data\cyberbullying.db
+2026-06-04T15:48:31.858199 | _setup_db total_usuarios=3
+2026-06-04T15:48:31.858582 |   user id=1 nome=Alberto Baptista senha=$2b$12$4DNCFwrS1GpLzWfqYlmWPu5HUeMd1KMofuVk104sfmUWsz7SNGdU2 papel=admin
+2026-06-04T15:48:31.858947 |   user id=2 nome=Augusta Mulungia senha=$2b$12$amEu34KAXOMh/givIv6dPeS63xWv5/fl14OQnK5CeOr0wHLS/OPMC papel=moderador
+2026-06-04T15:48:31.859283 |   user id=3 nome=Rafael Mussumari senha=$2b$12$I7wQ/OruCK4SgbWYNAz9s.OoGrWe2iKauxtjE34rGptM0EXpfqc4a papel=moderador
+2026-06-04T15:48:32.298356 | _setup_db FINAL user id=1 nome=Alberto Baptista senha=$2b$12$4DNCFwrS1GpLzWfqYlmWPu5HUeMd1KMofuVk104sfmUWsz7SNGdU2 papel=admin
+2026-06-04T15:48:32.298921 | _setup_db END
+[15:48:32] carregar_alertas: 2 alertas encontrados
+[15:48:32] create_app(db_path=C:\Users\AJESF\OneDrive\Documents\New folder\cyberbullying_detector\data\cyberbullying.db)
+[15:48:32] === DIAGNÓSTICO ===
+[15:48:32] DB_PATH = C:\Users\AJESF\OneDrive\Documents\New folder\cyberbullying_detector\data\cyberbullying.db
+[15:48:32] DB exists: True
+[15:48:32] analises=44 comentarios=44 alertas=2
+[15:48:32]   id=44 classif=Neutro conf=0.0 resolv=0
+[15:48:32]   id=43 classif=Neutro conf=25.0 resolv=0
+[15:48:32]   id=42 classif=Neutro conf=0.0 resolv=0
+[15:48:32]   id=41 classif=Neutro conf=15.0 resolv=0
+[15:48:32]   id=40 classif=Neutro conf=0.0 resolv=0
+[15:48:32] === FIM DIAGNÓSTICO ===
+[15:48:32] carregar_alertas: 2 alertas encontrados
+[15:48:37] carregar_alertas: 2 alertas encontrados
+[15:48:42] carregar_alertas: 2 alertas encontrados
+[15:48:47] carregar_alertas: 2 alertas encontrados
+[15:48:52] carregar_alertas: 2 alertas encontrados
+[15:48:58] carregar_alertas: 2 alertas encontrados
+[15:49:03] carregar_alertas: 2 alertas encontrados
+[15:49:08] carregar_alertas: 2 alertas encontrados
+[15:49:13] carregar_alertas: 2 alertas encontrados
+[15:49:18] carregar_alertas: 2 alertas encontrados
+[15:49:23] carregar_alertas: 2 alertas encontrados
+[15:49:28] carregar_alertas: 2 alertas encontrados
+[15:49:33] carregar_alertas: 2 alertas encontrados
+[15:49:38] carregar_alertas: 2 alertas encontrados
+[15:49:43] carregar_alertas: 2 alertas encontrados
+[15:49:48] carregar_alertas: 2 alertas encontrados
+[15:49:53] carregar_alertas: 2 alertas encontrados
+[15:49:58] carregar_alertas: 2 alertas encontrados
+[15:50:03] carregar_alertas: 2 alertas encontrados
+[15:50:08] carregar_alertas: 2 alertas encontrados
+[15:50:13] carregar_alertas: 2 alertas encontrados
+[15:50:18] carregar_alertas: 2 alertas encontrados
+[15:50:23] carregar_alertas: 2 alertas encontrados
+[15:50:28] carregar_alertas: 2 alertas encontrados
+[15:50:33] carregar_alertas: 2 alertas encontrados
+[15:50:38] carregar_alertas: 2 alertas encontrados
+[15:50:43] carregar_alertas: 2 alertas encontrados
+[15:50:48] carregar_alertas: 2 alertas encontrados
+[15:50:53] carregar_alertas: 2 alertas encontrados
+[15:50:58] carregar_alertas: 2 alertas encontrados
+[15:51:03] carregar_alertas: 2 alertas encontrados
+2026-06-05T08:20:54.190975 | _setup_db START path=C:\Users\AJESF\OneDrive\Documents\New folder\cyberbullying_detector\data\cyberbullying.db
+2026-06-05T08:20:54.210372 | _setup_db total_usuarios=3
+2026-06-05T08:20:54.211303 |   user id=1 nome=Alberto Baptista senha=$2b$12$4DNCFwrS1GpLzWfqYlmWPu5HUeMd1KMofuVk104sfmUWsz7SNGdU2 papel=admin
+2026-06-05T08:20:54.211899 |   user id=2 nome=Augusta Mulungia senha=$2b$12$amEu34KAXOMh/givIv6dPeS63xWv5/fl14OQnK5CeOr0wHLS/OPMC papel=moderador
+2026-06-05T08:20:54.212573 |   user id=3 nome=Rafael Mussumari senha=$2b$12$I7wQ/OruCK4SgbWYNAz9s.OoGrWe2iKauxtjE34rGptM0EXpfqc4a papel=moderador
+2026-06-05T08:20:54.660118 | _setup_db FINAL user id=1 nome=Alberto Baptista senha=$2b$12$4DNCFwrS1GpLzWfqYlmWPu5HUeMd1KMofuVk104sfmUWsz7SNGdU2 papel=admin
+2026-06-05T08:20:54.661392 | _setup_db END
+2026-06-05T08:21:04.224752 | _setup_db START path=C:\Users\AJESF\OneDrive\Documents\New folder\cyberbullying_detector\data\cyberbullying.db
+2026-06-05T08:21:04.227204 | _setup_db total_usuarios=3
+2026-06-05T08:21:04.227903 |   user id=1 nome=Alberto Baptista senha=$2b$12$4DNCFwrS1GpLzWfqYlmWPu5HUeMd1KMofuVk104sfmUWsz7SNGdU2 papel=admin
+2026-06-05T08:21:04.228376 |   user id=2 nome=Augusta Mulungia senha=$2b$12$amEu34KAXOMh/givIv6dPeS63xWv5/fl14OQnK5CeOr0wHLS/OPMC papel=moderador
+2026-06-05T08:21:04.228924 |   user id=3 nome=Rafael Mussumari senha=$2b$12$I7wQ/OruCK4SgbWYNAz9s.OoGrWe2iKauxtjE34rGptM0EXpfqc4a papel=moderador
+2026-06-05T08:21:04.671703 | _setup_db FINAL user id=1 nome=Alberto Baptista senha=$2b$12$4DNCFwrS1GpLzWfqYlmWPu5HUeMd1KMofuVk104sfmUWsz7SNGdU2 papel=admin
+2026-06-05T08:21:04.672399 | _setup_db END
+2026-06-05T08:21:41.430330 | _login attempt user="Alberto Baptista"
+2026-06-05T08:21:41.434783 | _login user lookup result=encontrado
+2026-06-05T08:21:41.854222 | _setup_db START path=C:\Users\AJESF\OneDrive\Documents\New folder\cyberbullying_detector\data\cyberbullying.db
+2026-06-05T08:21:41.857318 | _setup_db total_usuarios=3
+2026-06-05T08:21:41.858665 |   user id=1 nome=Alberto Baptista senha=$2b$12$4DNCFwrS1GpLzWfqYlmWPu5HUeMd1KMofuVk104sfmUWsz7SNGdU2 papel=admin
+2026-06-05T08:21:41.859808 |   user id=2 nome=Augusta Mulungia senha=$2b$12$amEu34KAXOMh/givIv6dPeS63xWv5/fl14OQnK5CeOr0wHLS/OPMC papel=moderador
+2026-06-05T08:21:41.860917 |   user id=3 nome=Rafael Mussumari senha=$2b$12$I7wQ/OruCK4SgbWYNAz9s.OoGrWe2iKauxtjE34rGptM0EXpfqc4a papel=moderador
+2026-06-05T08:21:42.975025 | _setup_db FINAL user id=1 nome=Alberto Baptista senha=$2b$12$4DNCFwrS1GpLzWfqYlmWPu5HUeMd1KMofuVk104sfmUWsz7SNGdU2 papel=admin
+2026-06-05T08:21:42.976550 | _setup_db END
+[08:21:43] carregar_alertas: 0 alertas encontrados
+[08:21:43] create_app(db_path=C:\Users\AJESF\OneDrive\Documents\New folder\cyberbullying_detector\data\cyberbullying.db)
+[08:21:43] === DIAGNÓSTICO ===
+[08:21:43] DB_PATH = C:\Users\AJESF\OneDrive\Documents\New folder\cyberbullying_detector\data\cyberbullying.db
+[08:21:43] DB exists: True
+[08:21:43] analises=44 comentarios=44 alertas=0
+[08:21:43]   id=44 classif=Neutro conf=0.0 resolv=0
+[08:21:43]   id=43 classif=Neutro conf=25.0 resolv=0
+[08:21:43]   id=42 classif=Neutro conf=0.0 resolv=0
+[08:21:43]   id=41 classif=Neutro conf=15.0 resolv=0
+[08:21:43]   id=40 classif=Neutro conf=0.0 resolv=0
+[08:21:43] === FIM DIAGNÓSTICO ===
+[08:21:43] carregar_alertas: 0 alertas encontrados
+[08:21:48] carregar_alertas: 0 alertas encontrados
+[08:21:53] carregar_alertas: 0 alertas encontrados
+[08:21:58] carregar_alertas: 0 alertas encontrados
+[08:22:03] carregar_alertas: 0 alertas encontrados
+[08:22:08] carregar_alertas: 0 alertas encontrados
+[08:22:13] carregar_alertas: 0 alertas encontrados
+[08:22:18] carregar_alertas: 0 alertas encontrados
+[08:22:23] carregar_alertas: 0 alertas encontrados
+2026-06-05T08:22:26.166821 | _setup_db START path=C:\Users\AJESF\OneDrive\Documents\New folder\cyberbullying_detector\data\cyberbullying.db
+2026-06-05T08:22:26.170149 | _setup_db total_usuarios=3
+2026-06-05T08:22:26.170874 |   user id=1 nome=Alberto Baptista senha=$2b$12$4DNCFwrS1GpLzWfqYlmWPu5HUeMd1KMofuVk104sfmUWsz7SNGdU2 papel=admin
+2026-06-05T08:22:26.171577 |   user id=2 nome=Augusta Mulungia senha=$2b$12$amEu34KAXOMh/givIv6dPeS63xWv5/fl14OQnK5CeOr0wHLS/OPMC papel=moderador
+2026-06-05T08:22:26.172008 |   user id=3 nome=Rafael Mussumari senha=$2b$12$I7wQ/OruCK4SgbWYNAz9s.OoGrWe2iKauxtjE34rGptM0EXpfqc4a papel=moderador
+2026-06-05T08:22:27.143621 | _setup_db FINAL user id=1 nome=Alberto Baptista senha=$2b$12$4DNCFwrS1GpLzWfqYlmWPu5HUeMd1KMofuVk104sfmUWsz7SNGdU2 papel=admin
+2026-06-05T08:22:27.145270 | _setup_db END
+2026-06-05T08:22:45.273735 | _login attempt user="Alberto Baptista"
+2026-06-05T08:22:45.275541 | _login user lookup result=encontrado
+2026-06-05T08:22:45.766546 | _setup_db START path=C:\Users\AJESF\OneDrive\Documents\New folder\cyberbullying_detector\data\cyberbullying.db
+2026-06-05T08:22:45.768471 | _setup_db total_usuarios=3
+2026-06-05T08:22:45.769134 |   user id=1 nome=Alberto Baptista senha=$2b$12$4DNCFwrS1GpLzWfqYlmWPu5HUeMd1KMofuVk104sfmUWsz7SNGdU2 papel=admin
+2026-06-05T08:22:45.770656 |   user id=2 nome=Augusta Mulungia senha=$2b$12$amEu34KAXOMh/givIv6dPeS63xWv5/fl14OQnK5CeOr0wHLS/OPMC papel=moderador
+2026-06-05T08:22:45.772187 |   user id=3 nome=Rafael Mussumari senha=$2b$12$I7wQ/OruCK4SgbWYNAz9s.OoGrWe2iKauxtjE34rGptM0EXpfqc4a papel=moderador
+2026-06-05T08:22:46.695724 | _setup_db FINAL user id=1 nome=Alberto Baptista senha=$2b$12$4DNCFwrS1GpLzWfqYlmWPu5HUeMd1KMofuVk104sfmUWsz7SNGdU2 papel=admin
+2026-06-05T08:22:46.697410 | _setup_db END
+[08:22:46] carregar_alertas: 0 alertas encontrados
+[08:22:46] create_app(db_path=C:\Users\AJESF\OneDrive\Documents\New folder\cyberbullying_detector\data\cyberbullying.db)
+[08:22:46] === DIAGNÓSTICO ===
+[08:22:46] DB_PATH = C:\Users\AJESF\OneDrive\Documents\New folder\cyberbullying_detector\data\cyberbullying.db
+[08:22:46] DB exists: True
+[08:22:46] analises=44 comentarios=44 alertas=0
+[08:22:46]   id=44 classif=Neutro conf=0.0 resolv=0
+[08:22:46]   id=43 classif=Neutro conf=25.0 resolv=0
+[08:22:46]   id=42 classif=Neutro conf=0.0 resolv=0
+[08:22:46]   id=41 classif=Neutro conf=15.0 resolv=0
+[08:22:46]   id=40 classif=Neutro conf=0.0 resolv=0
+[08:22:46] === FIM DIAGNÓSTICO ===
+[08:22:46] carregar_alertas: 0 alertas encontrados
+[08:22:51] carregar_alertas: 0 alertas encontrados
+2026-06-05T08:24:04.901604 | _setup_db START path=C:\Users\AJESF\OneDrive\Documents\New folder\cyberbullying_detector\data\cyberbullying.db
+2026-06-05T08:24:04.921917 | _setup_db total_usuarios=3
+2026-06-05T08:24:04.922828 |   user id=1 nome=Alberto Baptista senha=$2b$12$4DNCFwrS1GpLzWfqYlmWPu5HUeMd1KMofuVk104sfmUWsz7SNGdU2 papel=admin
+2026-06-05T08:24:04.923509 |   user id=2 nome=Augusta Mulungia senha=$2b$12$amEu34KAXOMh/givIv6dPeS63xWv5/fl14OQnK5CeOr0wHLS/OPMC papel=moderador
+2026-06-05T08:24:04.924201 |   user id=3 nome=Rafael Mussumari senha=$2b$12$I7wQ/OruCK4SgbWYNAz9s.OoGrWe2iKauxtjE34rGptM0EXpfqc4a papel=moderador
+2026-06-05T08:24:05.371353 | _setup_db FINAL user id=1 nome=Alberto Baptista senha=$2b$12$4DNCFwrS1GpLzWfqYlmWPu5HUeMd1KMofuVk104sfmUWsz7SNGdU2 papel=admin
+2026-06-05T08:24:05.392792 | _setup_db END
+2026-06-05T08:24:05.396228 | Erro servidor web: Invalid async_mode specified
+2026-06-05T08:27:35.811955 | _setup_db START path=C:\Users\AJESF\OneDrive\Documents\New folder\cyberbullying_detector\data\cyberbullying.db
+2026-06-05T08:27:35.815663 | _setup_db total_usuarios=3
+2026-06-05T08:27:35.816646 |   user id=1 nome=Alberto Baptista senha=$2b$12$4DNCFwrS1GpLzWfqYlmWPu5HUeMd1KMofuVk104sfmUWsz7SNGdU2 papel=admin
+2026-06-05T08:27:35.817386 |   user id=2 nome=Augusta Mulungia senha=$2b$12$amEu34KAXOMh/givIv6dPeS63xWv5/fl14OQnK5CeOr0wHLS/OPMC papel=moderador
+2026-06-05T08:27:35.818511 |   user id=3 nome=Rafael Mussumari senha=$2b$12$I7wQ/OruCK4SgbWYNAz9s.OoGrWe2iKauxtjE34rGptM0EXpfqc4a papel=moderador
+2026-06-05T08:27:36.281571 | _setup_db FINAL user id=1 nome=Alberto Baptista senha=$2b$12$4DNCFwrS1GpLzWfqYlmWPu5HUeMd1KMofuVk104sfmUWsz7SNGdU2 papel=admin
+2026-06-05T08:27:36.282801 | _setup_db END
+2026-06-05T08:27:36.285449 | Erro servidor web: Invalid async_mode specified
+2026-06-05T08:29:27.668230 | _setup_db START path=C:\Users\AJESF\OneDrive\Documents\New folder\cyberbullying_detector\data\cyberbullying.db
+2026-06-05T08:29:27.672272 | _setup_db total_usuarios=3
+2026-06-05T08:29:27.672936 |   user id=1 nome=Alberto Baptista senha=$2b$12$4DNCFwrS1GpLzWfqYlmWPu5HUeMd1KMofuVk104sfmUWsz7SNGdU2 papel=admin
+2026-06-05T08:29:27.673441 |   user id=2 nome=Augusta Mulungia senha=$2b$12$amEu34KAXOMh/givIv6dPeS63xWv5/fl14OQnK5CeOr0wHLS/OPMC papel=moderador
+2026-06-05T08:29:27.674477 |   user id=3 nome=Rafael Mussumari senha=$2b$12$I7wQ/OruCK4SgbWYNAz9s.OoGrWe2iKauxtjE34rGptM0EXpfqc4a papel=moderador
+2026-06-05T08:29:28.128940 | _setup_db FINAL user id=1 nome=Alberto Baptista senha=$2b$12$4DNCFwrS1GpLzWfqYlmWPu5HUeMd1KMofuVk104sfmUWsz7SNGdU2 papel=admin
+2026-06-05T08:29:28.130084 | _setup_db END
+2026-06-05T08:29:28.133085 | Erro servidor web: Invalid async_mode specified
+2026-06-05T08:31:24.356427 | _setup_db START path=C:\Users\AJESF\OneDrive\Documents\New folder\cyberbullying_detector\data\cyberbullying.db
+2026-06-05T08:31:24.359408 | _setup_db total_usuarios=3
+2026-06-05T08:31:24.360149 |   user id=1 nome=Alberto Baptista senha=$2b$12$4DNCFwrS1GpLzWfqYlmWPu5HUeMd1KMofuVk104sfmUWsz7SNGdU2 papel=admin
+2026-06-05T08:31:24.360828 |   user id=2 nome=Augusta Mulungia senha=$2b$12$amEu34KAXOMh/givIv6dPeS63xWv5/fl14OQnK5CeOr0wHLS/OPMC papel=moderador
+2026-06-05T08:31:24.361402 |   user id=3 nome=Rafael Mussumari senha=$2b$12$I7wQ/OruCK4SgbWYNAz9s.OoGrWe2iKauxtjE34rGptM0EXpfqc4a papel=moderador
+2026-06-05T08:31:24.812436 | _setup_db FINAL user id=1 nome=Alberto Baptista senha=$2b$12$4DNCFwrS1GpLzWfqYlmWPu5HUeMd1KMofuVk104sfmUWsz7SNGdU2 papel=admin
+2026-06-05T08:31:24.813346 | _setup_db END
+2026-06-05T08:31:24.815531 | Erro servidor web: Invalid async_mode specified
+2026-06-05T09:00:36.150337 | _setup_db START path=C:\Users\AJESF\OneDrive\Documents\New folder\cyberbullying_detector\data\cyberbullying.db
+2026-06-05T09:00:36.153521 | _setup_db total_usuarios=3
+2026-06-05T09:00:36.154092 |   user id=1 nome=Alberto Baptista senha=$2b$12$4DNCFwrS1GpLzWfqYlmWPu5HUeMd1KMofuVk104sfmUWsz7SNGdU2 papel=admin
+2026-06-05T09:00:36.154602 |   user id=2 nome=Augusta Mulungia senha=$2b$12$amEu34KAXOMh/givIv6dPeS63xWv5/fl14OQnK5CeOr0wHLS/OPMC papel=moderador
+2026-06-05T09:00:36.155035 |   user id=3 nome=Rafael Mussumari senha=$2b$12$I7wQ/OruCK4SgbWYNAz9s.OoGrWe2iKauxtjE34rGptM0EXpfqc4a papel=moderador
+2026-06-05T09:00:36.604101 | _setup_db FINAL user id=1 nome=Alberto Baptista senha=$2b$12$4DNCFwrS1GpLzWfqYlmWPu5HUeMd1KMofuVk104sfmUWsz7SNGdU2 papel=admin
+2026-06-05T09:00:36.605422 | _setup_db END
+2026-06-05T09:00:36.608248 | Servidor web puro a iniciar
+2026-06-05T09:03:39.421981 | _setup_db START path=C:\Users\AJESF\OneDrive\Documents\New folder\cyberbullying_detector\data\cyberbullying.db
+2026-06-05T09:03:39.444399 | _setup_db total_usuarios=3
+2026-06-05T09:03:39.445339 |   user id=1 nome=Alberto Baptista senha=$2b$12$4DNCFwrS1GpLzWfqYlmWPu5HUeMd1KMofuVk104sfmUWsz7SNGdU2 papel=admin
+2026-06-05T09:03:39.445928 |   user id=2 nome=Augusta Mulungia senha=$2b$12$amEu34KAXOMh/givIv6dPeS63xWv5/fl14OQnK5CeOr0wHLS/OPMC papel=moderador
+2026-06-05T09:03:39.446402 |   user id=3 nome=Rafael Mussumari senha=$2b$12$I7wQ/OruCK4SgbWYNAz9s.OoGrWe2iKauxtjE34rGptM0EXpfqc4a papel=moderador
+2026-06-05T09:03:39.888268 | _setup_db FINAL user id=1 nome=Alberto Baptista senha=$2b$12$4DNCFwrS1GpLzWfqYlmWPu5HUeMd1KMofuVk104sfmUWsz7SNGdU2 papel=admin
+2026-06-05T09:03:39.889765 | _setup_db END
+2026-06-05T09:03:39.895077 | Servidor web puro a iniciar
+2026-06-05T09:04:12.756543 | _setup_db START path=C:\Users\AJESF\OneDrive\Documents\New folder\cyberbullying_detector\data\cyberbullying.db
+2026-06-05T09:04:12.759818 | _setup_db total_usuarios=3
+2026-06-05T09:04:12.760516 |   user id=1 nome=Alberto Baptista senha=$2b$12$4DNCFwrS1GpLzWfqYlmWPu5HUeMd1KMofuVk104sfmUWsz7SNGdU2 papel=admin
+2026-06-05T09:04:12.760988 |   user id=2 nome=Augusta Mulungia senha=$2b$12$amEu34KAXOMh/givIv6dPeS63xWv5/fl14OQnK5CeOr0wHLS/OPMC papel=moderador
+2026-06-05T09:04:12.761657 |   user id=3 nome=Rafael Mussumari senha=$2b$12$I7wQ/OruCK4SgbWYNAz9s.OoGrWe2iKauxtjE34rGptM0EXpfqc4a papel=moderador
+2026-06-05T09:04:12.934268 | _setup_db START path=C:\Users\AJESF\OneDrive\Documents\New folder\cyberbullying_detector\data\cyberbullying.db
+2026-06-05T09:04:12.951087 | _setup_db total_usuarios=3
+2026-06-05T09:04:12.951600 |   user id=1 nome=Alberto Baptista senha=$2b$12$4DNCFwrS1GpLzWfqYlmWPu5HUeMd1KMofuVk104sfmUWsz7SNGdU2 papel=admin
+2026-06-05T09:04:12.952138 |   user id=2 nome=Augusta Mulungia senha=$2b$12$amEu34KAXOMh/givIv6dPeS63xWv5/fl14OQnK5CeOr0wHLS/OPMC papel=moderador
+2026-06-05T09:04:12.952435 |   user id=3 nome=Rafael Mussumari senha=$2b$12$I7wQ/OruCK4SgbWYNAz9s.OoGrWe2iKauxtjE34rGptM0EXpfqc4a papel=moderador
+2026-06-05T09:04:13.356098 | _setup_db FINAL user id=1 nome=Alberto Baptista senha=$2b$12$4DNCFwrS1GpLzWfqYlmWPu5HUeMd1KMofuVk104sfmUWsz7SNGdU2 papel=admin
+2026-06-05T09:04:13.357478 | _setup_db END
+2026-06-05T09:04:13.364993 | Servidor web puro a iniciar
+2026-06-05T09:04:13.438346 | _setup_db FINAL user id=1 nome=Alberto Baptista senha=$2b$12$4DNCFwrS1GpLzWfqYlmWPu5HUeMd1KMofuVk104sfmUWsz7SNGdU2 papel=admin
+2026-06-05T09:04:13.439430 | _setup_db END
+2026-06-05T09:04:13.444059 | Servidor web puro a iniciar
+2026-06-05T09:11:22.722846 | _setup_db START path=C:\Users\AJESF\OneDrive\Documents\New folder\cyberbullying_detector\data\cyberbullying.db
+2026-06-05T09:11:22.724615 | _setup_db total_usuarios=3
+2026-06-05T09:11:22.725545 |   user id=1 nome=Alberto Baptista senha=$2b$12$4DNCFwrS1GpLzWfqYlmWPu5HUeMd1KMofuVk104sfmUWsz7SNGdU2 papel=admin
+2026-06-05T09:11:22.726347 |   user id=2 nome=Augusta Mulungia senha=$2b$12$amEu34KAXOMh/givIv6dPeS63xWv5/fl14OQnK5CeOr0wHLS/OPMC papel=moderador
+2026-06-05T09:11:22.726959 |   user id=3 nome=Rafael Mussumari senha=$2b$12$I7wQ/OruCK4SgbWYNAz9s.OoGrWe2iKauxtjE34rGptM0EXpfqc4a papel=moderador
+2026-06-05T09:11:23.175356 | _setup_db FINAL user id=1 nome=Alberto Baptista senha=$2b$12$4DNCFwrS1GpLzWfqYlmWPu5HUeMd1KMofuVk104sfmUWsz7SNGdU2 papel=admin
+2026-06-05T09:11:23.176073 | _setup_db END
+2026-06-05T09:11:23.178234 | Erro servidor web: Invalid async_mode specified
+2026-06-05T09:11:43.284785 | _setup_db START path=C:\Users\AJESF\OneDrive\Documents\New folder\cyberbullying_detector\data\cyberbullying.db
+2026-06-05T09:11:43.287665 | _setup_db total_usuarios=3
+2026-06-05T09:11:43.288280 |   user id=1 nome=Alberto Baptista senha=$2b$12$4DNCFwrS1GpLzWfqYlmWPu5HUeMd1KMofuVk104sfmUWsz7SNGdU2 papel=admin
+2026-06-05T09:11:43.289102 |   user id=2 nome=Augusta Mulungia senha=$2b$12$amEu34KAXOMh/givIv6dPeS63xWv5/fl14OQnK5CeOr0wHLS/OPMC papel=moderador
+2026-06-05T09:11:43.289642 |   user id=3 nome=Rafael Mussumari senha=$2b$12$I7wQ/OruCK4SgbWYNAz9s.OoGrWe2iKauxtjE34rGptM0EXpfqc4a papel=moderador
+2026-06-05T09:11:43.736334 | _setup_db FINAL user id=1 nome=Alberto Baptista senha=$2b$12$4DNCFwrS1GpLzWfqYlmWPu5HUeMd1KMofuVk104sfmUWsz7SNGdU2 papel=admin
+2026-06-05T09:11:43.736994 | _setup_db END
+2026-06-05T09:11:43.740428 | Erro servidor web: Invalid async_mode specified
+2026-06-05T09:22:56.261940 | _setup_db START path=C:\Users\AJESF\OneDrive\Documents\New folder\cyberbullying_detector\data\cyberbullying.db
+2026-06-05T09:22:56.264683 | _setup_db total_usuarios=3
+2026-06-05T09:22:56.265433 |   user id=1 nome=Alberto Baptista senha=$2b$12$4DNCFwrS1GpLzWfqYlmWPu5HUeMd1KMofuVk104sfmUWsz7SNGdU2 papel=admin
+2026-06-05T09:22:56.266269 |   user id=2 nome=Augusta Mulungia senha=$2b$12$amEu34KAXOMh/givIv6dPeS63xWv5/fl14OQnK5CeOr0wHLS/OPMC papel=moderador
+2026-06-05T09:22:56.267073 |   user id=3 nome=Rafael Mussumari senha=$2b$12$I7wQ/OruCK4SgbWYNAz9s.OoGrWe2iKauxtjE34rGptM0EXpfqc4a papel=moderador
+2026-06-05T09:22:56.697842 | _setup_db FINAL user id=1 nome=Alberto Baptista senha=$2b$12$4DNCFwrS1GpLzWfqYlmWPu5HUeMd1KMofuVk104sfmUWsz7SNGdU2 papel=admin
+2026-06-05T09:22:56.698975 | _setup_db END
+2026-06-05T09:22:56.701908 | Erro servidor web: Invalid async_mode specified
+2026-06-05T09:23:13.905531 | _login attempt user="Alberto Baptista"
+2026-06-05T09:23:13.909560 | _login user lookup result=encontrado
+2026-06-05T09:23:14.329920 | _setup_db START path=C:\Users\AJESF\OneDrive\Documents\New folder\cyberbullying_detector\data\cyberbullying.db
+2026-06-05T09:23:14.333536 | _setup_db total_usuarios=3
+2026-06-05T09:23:14.334515 |   user id=1 nome=Alberto Baptista senha=$2b$12$4DNCFwrS1GpLzWfqYlmWPu5HUeMd1KMofuVk104sfmUWsz7SNGdU2 papel=admin
+2026-06-05T09:23:14.336054 |   user id=2 nome=Augusta Mulungia senha=$2b$12$amEu34KAXOMh/givIv6dPeS63xWv5/fl14OQnK5CeOr0wHLS/OPMC papel=moderador
+2026-06-05T09:23:14.337541 |   user id=3 nome=Rafael Mussumari senha=$2b$12$I7wQ/OruCK4SgbWYNAz9s.OoGrWe2iKauxtjE34rGptM0EXpfqc4a papel=moderador
+2026-06-05T09:23:15.416385 | _setup_db FINAL user id=1 nome=Alberto Baptista senha=$2b$12$4DNCFwrS1GpLzWfqYlmWPu5HUeMd1KMofuVk104sfmUWsz7SNGdU2 papel=admin
+2026-06-05T09:23:15.418844 | _setup_db END
+[09:23:16] carregar_alertas: 7 alertas encontrados
+[09:23:16] create_app(db_path=C:\Users\AJESF\OneDrive\Documents\New folder\cyberbullying_detector\data\cyberbullying.db)
+[09:23:16] === DIAGNÓSTICO ===
+[09:23:16] DB_PATH = C:\Users\AJESF\OneDrive\Documents\New folder\cyberbullying_detector\data\cyberbullying.db
+[09:23:16] DB exists: True
+[09:23:16] analises=124 comentarios=124 alertas=7
+[09:23:16]   id=124 classif=Neutro conf=0.0 resolv=0
+[09:23:16]   id=123 classif=Neutro conf=25.0 resolv=0
+[09:23:16]   id=122 classif=Neutro conf=0.0 resolv=0
+[09:23:16]   id=121 classif=Neutro conf=15.0 resolv=0
+[09:23:16]   id=120 classif=Neutro conf=0.0 resolv=0
+[09:23:16] === FIM DIAGNÓSTICO ===
+[09:23:16] carregar_alertas: 7 alertas encontrados
+[09:23:21] carregar_alertas: 7 alertas encontrados
+2026-06-05T10:40:04.754516 | _setup_db START path=C:\Users\AJESF\OneDrive\Documents\New folder\cyberbullying_detector\data\cyberbullying.db
+2026-06-05T10:40:04.758618 | _setup_db total_usuarios=3
+2026-06-05T10:40:04.759421 |   user id=1 nome=Alberto Baptista senha=$2b$12$4DNCFwrS1GpLzWfqYlmWPu5HUeMd1KMofuVk104sfmUWsz7SNGdU2 papel=admin
+2026-06-05T10:40:04.759863 |   user id=2 nome=Augusta Mulungia senha=$2b$12$amEu34KAXOMh/givIv6dPeS63xWv5/fl14OQnK5CeOr0wHLS/OPMC papel=moderador
+2026-06-05T10:40:04.760305 |   user id=3 nome=Rafael Mussumari senha=$2b$12$I7wQ/OruCK4SgbWYNAz9s.OoGrWe2iKauxtjE34rGptM0EXpfqc4a papel=moderador
+2026-06-05T10:40:05.233738 | _setup_db FINAL user id=1 nome=Alberto Baptista senha=$2b$12$4DNCFwrS1GpLzWfqYlmWPu5HUeMd1KMofuVk104sfmUWsz7SNGdU2 papel=admin
+2026-06-05T10:40:05.234618 | _setup_db END
+2026-06-05T10:40:05.237817 | Erro servidor web: Invalid async_mode specified
+2026-06-05T10:40:19.657659 | _login attempt user="Alberto Baptista"
+2026-06-05T10:40:19.661765 | _login user lookup result=encontrado
+2026-06-05T10:40:20.076672 | _setup_db START path=C:\Users\AJESF\OneDrive\Documents\New folder\cyberbullying_detector\data\cyberbullying.db
+2026-06-05T10:40:20.080092 | _setup_db total_usuarios=3
+2026-06-05T10:40:20.081348 |   user id=1 nome=Alberto Baptista senha=$2b$12$4DNCFwrS1GpLzWfqYlmWPu5HUeMd1KMofuVk104sfmUWsz7SNGdU2 papel=admin
+2026-06-05T10:40:20.082295 |   user id=2 nome=Augusta Mulungia senha=$2b$12$amEu34KAXOMh/givIv6dPeS63xWv5/fl14OQnK5CeOr0wHLS/OPMC papel=moderador
+2026-06-05T10:40:20.087432 |   user id=3 nome=Rafael Mussumari senha=$2b$12$I7wQ/OruCK4SgbWYNAz9s.OoGrWe2iKauxtjE34rGptM0EXpfqc4a papel=moderador
+2026-06-05T10:40:20.721078 | _setup_db FINAL user id=1 nome=Alberto Baptista senha=$2b$12$4DNCFwrS1GpLzWfqYlmWPu5HUeMd1KMofuVk104sfmUWsz7SNGdU2 papel=admin
+2026-06-05T10:40:20.722836 | _setup_db END
+[10:40:21] carregar_alertas: 1 alertas encontrados
+[10:40:21] create_app(db_path=C:\Users\AJESF\OneDrive\Documents\New folder\cyberbullying_detector\data\cyberbullying.db)
+[10:40:21] === DIAGNÓSTICO ===
+[10:40:21] DB_PATH = C:\Users\AJESF\OneDrive\Documents\New folder\cyberbullying_detector\data\cyberbullying.db
+[10:40:21] DB exists: True
+[10:40:21] analises=124 comentarios=124 alertas=1
+[10:40:21]   id=124 classif=Neutro conf=0.0 resolv=0
+[10:40:21]   id=123 classif=Neutro conf=25.0 resolv=0
+[10:40:21]   id=122 classif=Neutro conf=0.0 resolv=0
+[10:40:21]   id=121 classif=Neutro conf=15.0 resolv=0
+[10:40:21]   id=120 classif=Neutro conf=0.0 resolv=0
+[10:40:21] === FIM DIAGNÓSTICO ===
+[10:40:21] carregar_alertas: 1 alertas encontrados
+[10:40:26] carregar_alertas: 1 alertas encontrados
+[10:40:31] carregar_alertas: 1 alertas encontrados
+[10:40:36] carregar_alertas: 1 alertas encontrados
+[10:40:41] carregar_alertas: 1 alertas encontrados
+[10:40:44] carregar_alertas: 0 alertas encontrados
+[10:40:46] carregar_alertas: 0 alertas encontrados
+2026-06-05T10:40:51.108024 | _setup_db START path=C:\Users\AJESF\OneDrive\Documents\New folder\cyberbullying_detector\data\cyberbullying.db
+2026-06-05T10:40:51.134187 | _setup_db total_usuarios=3
+2026-06-05T10:40:51.135413 |   user id=1 nome=Alberto Baptista senha=$2b$12$4DNCFwrS1GpLzWfqYlmWPu5HUeMd1KMofuVk104sfmUWsz7SNGdU2 papel=admin
+2026-06-05T10:40:51.136983 |   user id=2 nome=Augusta Mulungia senha=$2b$12$amEu34KAXOMh/givIv6dPeS63xWv5/fl14OQnK5CeOr0wHLS/OPMC papel=moderador
+2026-06-05T10:40:51.144067 |   user id=3 nome=Rafael Mussumari senha=$2b$12$I7wQ/OruCK4SgbWYNAz9s.OoGrWe2iKauxtjE34rGptM0EXpfqc4a papel=moderador
+2026-06-05T10:40:51.755328 | _setup_db FINAL user id=1 nome=Alberto Baptista senha=$2b$12$4DNCFwrS1GpLzWfqYlmWPu5HUeMd1KMofuVk104sfmUWsz7SNGdU2 papel=admin
+2026-06-05T10:40:51.757236 | _setup_db END
+2026-06-05T10:40:51.764497 | Erro servidor web: Invalid async_mode specified
