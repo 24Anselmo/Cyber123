@@ -13,7 +13,9 @@ __pycache__/
 # Logs
 *.log
 
-# SQLite WAL
+# SQLite
+data/
+*.db
 *.db-shm
 *.db-wal
 

@@ -4,10 +4,9 @@ import bcrypt
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
-from flask_socketio import SocketIO
 
 db = SQLAlchemy()
-socketio = SocketIO()
+socketio = None
 
 def create_app(db_path=None):
     flask_app = Flask(__name__)
@@ -31,7 +30,13 @@ def create_app(db_path=None):
     }
     
     CORS(flask_app)
-    socketio.init_app(flask_app, cors_allowed_origins="*")
+    global socketio
+    try:
+        from flask_socketio import SocketIO as _SocketIO
+        socketio = _SocketIO(async_mode='threading')
+        socketio.init_app(flask_app, cors_allowed_origins="*")
+    except Exception:
+        socketio = None
     db.init_app(flask_app)
     
     with flask_app.app_context():

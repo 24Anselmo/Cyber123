@@ -254,6 +254,10 @@ th { background: var(--gray-100); font-weight: 600; white-space: nowrap; }
 
 #relatorio-resultado { margin-top: 0.75rem; padding: 0.75rem; background: var(--gray-100); border-radius: 6px; font-size: 0.85rem; }
 
+.chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.chart-box { position: relative; height: 260px; padding: 0.5rem; }
+.chart-full { grid-column: 1 / -1; height: 220px; }
+
 @media (max-width: 768px) {
     .layout { flex-direction: column; }
     .sidebar {

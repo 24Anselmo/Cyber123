@@ -3,7 +3,7 @@ from PyInstaller.utils.hooks import collect_all
 
 datas = [('..\\app', 'app'), ('..\\data\\local_dictionary.json', 'data'), ('logo.png', '.')]
 binaries = []
-hiddenimports = ['flask_cors', 'flask_socketio', 'flask_sqlalchemy', 'bcrypt', 'fpdf2', 'eventlet', 'numpy', 'requests', 'sqlalchemy', 'jinja2', 'markupsafe', 'itsdangerous', 'werkzeug', 'click', 'flask']
+hiddenimports = ['flask', 'flask_cors', 'flask_socketio', 'flask_session', 'bcrypt', 'requests', 'engineio', 'app', 'app.routes', 'app.models', 'app.detector', 'app.socket_events', 'app.bert_classifier', 'app.facebook_api']
 tmp_ret = collect_all('flask_sqlalchemy')
 datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 
@@ -37,7 +37,7 @@ exe = EXE(
     upx_exclude=[],
     runtime_tmpdir=None,
     console=False,
-    disable_windowed_traceback=False,
+    disable_windowed_traceback=True,
     argv_emulation=False,
     target_arch=None,
     codesign_identity=None,

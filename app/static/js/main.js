@@ -24,6 +24,7 @@ function mostrarPagina(nome) {
     if (window.innerWidth <= 768) {
         document.getElementById('sidebar').classList.remove('open');
     }
+    if (nome === 'dashboard') carregarDashboard();
 }
 
 function toggleSidebar() {
@@ -350,9 +351,85 @@ async function minhaSenha() {
     } catch (e) { console.error('Erro ao alterar senha:', e); }
 }
 
+let _chartClass = null, _chartFonte = null, _chartTendencia = null;
+
+async function carregarDashboard() {
+    try {
+        const data = await api('/api/dashboard');
+        const cores = { 'Crítico': '#dc2626', 'Ofensivo': '#f59e0b', 'Suspeito': '#eab308', 'Neutro': '#16a34a' };
+        if (_chartClass) { _chartClass.destroy(); }
+        const ctx1 = document.getElementById('chart-classificacao');
+        if (ctx1) {
+            _chartClass = new Chart(ctx1, {
+                type: 'doughnut',
+                data: {
+                    labels: data.por_classificacao.map(d => d.classificacao),
+                    datasets: [{
+                        data: data.por_classificacao.map(d => d.total),
+                        backgroundColor: data.por_classificacao.map(d => cores[d.classificacao] || '#666'),
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { padding: 12, usePointStyle: true } },
+                               title: { display: true, text: 'Por Classificação', font: { size: 14 } } }
+                }
+            });
+        }
+        if (_chartFonte) { _chartFonte.destroy(); }
+        const ctx2 = document.getElementById('chart-fonte');
+        if (ctx2) {
+            _chartFonte = new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: data.por_fonte.map(d => d.fonte),
+                    datasets: [{
+                        label: 'Análises',
+                        data: data.por_fonte.map(d => d.total),
+                        backgroundColor: '#2563eb',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false },
+                               title: { display: true, text: 'Por Fonte', font: { size: 14 } } },
+                    scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+                }
+            });
+        }
+        if (_chartTendencia) { _chartTendencia.destroy(); }
+        const ctx3 = document.getElementById('chart-tendencia');
+        if (ctx3) {
+            _chartTendencia = new Chart(ctx3, {
+                type: 'line',
+                data: {
+                    labels: data.tendencia.map(d => d.dia),
+                    datasets: [{
+                        label: 'Análises',
+                        data: data.tendencia.map(d => d.total),
+                        borderColor: '#2563eb',
+                        backgroundColor: 'rgba(37,99,235,0.1)',
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false },
+                               title: { display: true, text: 'Tendência (últimos 7 dias)', font: { size: 14 } } },
+                    scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+                }
+            });
+        }
+    } catch (e) { console.error('Erro ao carregar dashboard:', e); }
+}
+
 function carregarTudo() {
     carregarEstatisticas(); carregarAlertas(); carregarAnalises();
-    carregarFontes(); carregarDicionario(); carregarUsuarios();
+    carregarFontes(); carregarDicionario(); carregarUsuarios(); carregarDashboard();
 }
 
 document.addEventListener('DOMContentLoaded', function() {

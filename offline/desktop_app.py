@@ -50,6 +50,7 @@ def _debug_log(msg):
         log_path = os.path.join(DB_DIR, 'debug.log')
         with open(log_path, 'a', encoding='utf-8') as f:
             f.write(f'{datetime.now().isoformat()} | {msg}\n')
+            f.flush()
     except:
         pass
 
@@ -306,22 +307,190 @@ class CyberbullyingApp:
 
     def _start_web_server(self):
         try:
-            if not getattr(sys, 'frozen', False):
-                if BASE_DIR not in sys.path:
-                    sys.path.insert(0, BASE_DIR)
-            self._log(f'create_app(db_path={DB_PATH})')
-            from app import create_app
-            self.web_app = create_app(db_path=DB_PATH)
-            self.web_thread = threading.Thread(target=self._run_web, daemon=True)
-            self.web_thread.start()
+            self._log('A iniciar servidor web embutido...')
+            import flask
+            from flask import Flask, jsonify, request, send_from_directory, send_file, session as flask_session
+            if getattr(sys, 'frozen', False):
+                _tpl = os.path.join(sys._MEIPASS, 'app', 'templates')
+                _stat = os.path.join(sys._MEIPASS, 'app', 'static')
+            else:
+                _app_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'app')
+                _tpl = os.path.join(_app_dir, 'templates')
+                _stat = os.path.join(_app_dir, 'static')
+            _srv = Flask(__name__, template_folder=_tpl, static_folder=_stat, static_url_path='/static')
+            _srv.secret_key = 'cyber123secret'
+            _db = DB_PATH
+            @_srv.route('/')
+            def _index():
+                return send_file(os.path.join(_tpl, 'index.html'))
+            @_srv.route('/login', methods=['GET', 'POST'])
+            def _login_page():
+                if request.method == 'POST':
+                    u = request.form.get('username', '')
+                    p = request.form.get('password', '')
+                    conn = sqlite3.connect(_db)
+                    c = conn.cursor()
+                    row = c.execute("SELECT id, nome, senha, papel FROM usuarios WHERE nome=?", (u,)).fetchone()
+                    conn.close()
+                    if row and (row[2].startswith('$2') and _check_senha(p, row[2]) or row[2] == p):
+                        flask_session['user_id'] = row[0]
+                        flask_session['nome'] = row[1]
+                        flask_session['papel'] = row[3]
+                        return jsonify({'ok': True})
+                    return jsonify({'ok': False, 'erro': 'Credenciais invalidas'}), 401
+                return send_file(os.path.join(_tpl, 'login.html'))
+            @_srv.route('/logout')
+            def _logout():
+                flask_session.clear()
+                return jsonify({'ok': True})
+            @_srv.route('/api/estatisticas')
+            def _api_stats():
+                conn = sqlite3.connect(_db); c = conn.cursor()
+                total = c.execute('SELECT COUNT(*) FROM analises').fetchone()[0]
+                crit = c.execute("SELECT COUNT(*) FROM analises WHERE confianca>=90").fetchone()[0]
+                alert = c.execute("SELECT COUNT(*) FROM analises WHERE confianca>=50 AND resolvido=0").fetchone()[0]
+                ofen = c.execute("SELECT COUNT(*) FROM analises WHERE classificacao='Ofensivo'").fetchone()[0]
+                conn.close()
+                return jsonify({'total_analises': total, 'casos_criticos': crit, 'alertas_ativos': alert, 'total_ofensivo': ofen})
+            @_srv.route('/api/alertas')
+            def _api_alertas():
+                conn = sqlite3.connect(_db); c = conn.cursor()
+                rows = c.execute("SELECT a.id, a.data, c.autor, substr(c.texto,1,200), a.confianca, a.classificacao FROM analises a JOIN comentarios c ON a.comentario_id=c.id WHERE a.confianca>=50 AND a.resolvido=0 ORDER BY a.confianca DESC LIMIT 50").fetchall()
+                conn.close()
+                return jsonify([{'id': r[0], 'data': r[1], 'autor': r[2], 'texto': r[3], 'confianca': r[4], 'classificacao': r[5]} for r in rows])
+            @_srv.route('/api/analises')
+            def _api_analises():
+                conn = sqlite3.connect(_db); c = conn.cursor()
+                rows = c.execute("SELECT a.id, a.data, c.autor, substr(c.texto,1,200), a.classificacao, a.confianca, a.resolvido FROM analises a JOIN comentarios c ON a.comentario_id=c.id ORDER BY a.id DESC LIMIT 100").fetchall()
+                conn.close()
+                return jsonify([{'id': r[0], 'data': r[1], 'autor': r[2], 'texto': r[3], 'classificacao': r[4], 'confianca': r[5], 'resolvido': r[6]} for r in rows])
+            @_srv.route('/api/analises/<int:aid>/resolver', methods=['POST'])
+            def _api_resolver(aid):
+                conn = sqlite3.connect(_db)
+                conn.cursor().execute("UPDATE analises SET resolvido=1 WHERE id=?", (aid,))
+                conn.commit(); conn.close()
+                return jsonify({'ok': True})
+            @_srv.route('/api/comentarios')
+            def _api_comentarios():
+                conn = sqlite3.connect(_db); c = conn.cursor()
+                rows = c.execute("SELECT id, texto, autor, data FROM comentarios ORDER BY id DESC LIMIT 100").fetchall()
+                conn.close()
+                return jsonify([{'id': r[0], 'texto': r[1], 'autor': r[2], 'data': r[3]} for r in rows])
+            @_srv.route('/api/detectar', methods=['POST'])
+            def _api_detectar():
+                texto = request.json.get('texto', '')
+                if not texto:
+                    return jsonify({'erro': 'Texto vazio'}), 400
+                r = self.detector.analisar(texto)
+                girias_str = ', '.join([g['termo'] for g in r['girias']])
+                conn = sqlite3.connect(_db); c = conn.cursor()
+                c.execute("INSERT INTO comentarios (fonte_id, texto, autor, data) VALUES (1,?,?,?)", (texto, 'Web', datetime.now().isoformat()))
+                com_id = c.lastrowid
+                c.execute("INSERT INTO analises (comentario_id, classificacao, confianca, girias, data) VALUES (?,?,?,?,?)", (com_id, r['classificacao'], r['confianca'], girias_str, datetime.now().isoformat()))
+                conn.commit(); conn.close()
+                self._carregar_alertas()
+                return jsonify(r)
+            @_srv.route('/api/comentarios', methods=['POST'])
+            def _api_add_comentario():
+                texto = request.json.get('texto', '')
+                autor = request.json.get('autor', 'Anonimo')
+                if not texto:
+                    return jsonify({'erro': 'Texto vazio'}), 400
+                r = self.detector.analisar(texto)
+                girias_str = ', '.join([g['termo'] for g in r['girias']])
+                conn = sqlite3.connect(_db); c = conn.cursor()
+                c.execute("INSERT INTO comentarios (fonte_id, texto, autor, data) VALUES (1,?,?,?)", (texto, autor, datetime.now().isoformat()))
+                com_id = c.lastrowid
+                c.execute("INSERT INTO analises (comentario_id, classificacao, confianca, girias, data) VALUES (?,?,?,?,?)", (com_id, r['classificacao'], r['confianca'], girias_str, datetime.now().isoformat()))
+                conn.commit(); conn.close()
+                self._carregar_alertas()
+                return jsonify(r)
+            @_srv.route('/api/fontes')
+            def _api_fontes():
+                conn = sqlite3.connect(_db); c = conn.cursor()
+                rows = c.execute("SELECT id, url, nome, tipo FROM fontes").fetchall()
+                conn.close()
+                return jsonify([{'id': r[0], 'url': r[1], 'nome': r[2], 'tipo': r[3]} for r in rows])
+            @_srv.route('/api/fontes', methods=['POST'])
+            def _api_add_fonte():
+                data = request.json
+                conn = sqlite3.connect(_db)
+                conn.cursor().execute("INSERT INTO fontes (url, nome) VALUES (?,?)", (data['url'], data['nome']))
+                conn.commit(); conn.close()
+                return jsonify({'ok': True})
+            @_srv.route('/api/fontes/<int:fid>', methods=['DELETE'])
+            def _api_del_fonte(fid):
+                conn = sqlite3.connect(_db)
+                conn.cursor().execute("DELETE FROM fontes WHERE id=?", (fid,))
+                conn.commit(); conn.close()
+                return jsonify({'ok': True})
+            @_srv.route('/api/dicionario')
+            def _api_dicionario():
+                conn = sqlite3.connect(_db); c = conn.cursor()
+                rows = c.execute("SELECT id, termo, significado, tipo, nivel FROM girias_db").fetchall()
+                conn.close()
+                return jsonify([{'id': r[0], 'termo': r[1], 'significado': r[2], 'tipo': r[3], 'nivel': r[4]} for r in rows])
+            @_srv.route('/api/dicionario', methods=['POST'])
+            def _api_add_giria():
+                data = request.json
+                conn = sqlite3.connect(_db)
+                conn.cursor().execute("INSERT INTO girias_db (termo, significado, tipo, nivel) VALUES (?,?,?,?)", (data['termo'], data.get('significado',''), data.get('tipo','ofensivo'), data.get('nivel','medio')))
+                conn.commit(); conn.close()
+                self.detector._load_dicionario_local()
+                return jsonify({'ok': True})
+            @_srv.route('/api/dicionario/<int:gid>', methods=['DELETE'])
+            def _api_del_giria(gid):
+                conn = sqlite3.connect(_db)
+                conn.cursor().execute("DELETE FROM girias_db WHERE id=?", (gid,))
+                conn.commit(); conn.close()
+                self.detector._load_dicionario_local()
+                return jsonify({'ok': True})
+            @_srv.route('/api/usuarios')
+            def _api_usuarios():
+                conn = sqlite3.connect(_db); c = conn.cursor()
+                rows = c.execute("SELECT id, nome, email, papel FROM usuarios").fetchall()
+                conn.close()
+                return jsonify([{'id': r[0], 'nome': r[1], 'email': r[2], 'papel': r[3]} for r in rows])
+            @_srv.route('/api/inicializar', methods=['POST'])
+            def _api_inicializar():
+                _setup_db(DB_PATH)
+                return jsonify({'ok': True, 'msg': 'Dados iniciais carregados'})
+            @_srv.route('/api/importar-comentarios', methods=['POST'])
+            def _api_importar():
+                self._importar_testes_silent()
+                return jsonify({'ok': True, 'msg': 'Comentarios importados'})
+            @_srv.route('/api/relatorio')
+            def _api_relatorio():
+                conn = sqlite3.connect(_db); c = conn.cursor()
+                total = c.execute('SELECT COUNT(*) FROM analises').fetchone()[0]
+                por_cls = c.execute("SELECT classificacao, COUNT(*) FROM analises GROUP BY classificacao").fetchall()
+                por_fonte = c.execute("SELECT f.nome, COUNT(*) FROM analises a JOIN comentarios c ON a.comentario_id=c.id JOIN fontes f ON c.fonte_id=f.id GROUP BY f.nome").fetchall()
+                conn.close()
+                return jsonify({'total': total, 'por_classificacao': [{'nome': r[0], 'qtd': r[1]} for r in por_cls], 'por_fonte': [{'nome': r[0], 'qtd': r[1]} for r in por_fonte]})
+            @_srv.before_request
+            def _check_auth():
+                if request.path.startswith('/api/') and request.method != 'OPTIONS' and 'user_id' not in flask_session:
+                    return jsonify({'erro': 'Nao autenticado'}), 401
+            self._log('Servidor web embutido configurado')
+            _thr = threading.Thread(target=lambda: _srv.run(host='0.0.0.0', port=5000, debug=False, use_reloader=False, threaded=True), daemon=True)
+            _thr.start()
             self.status_web.config(text="🌐 Web: localhost:5000")
             self.status_web.bind('<Button-1>', lambda e: webbrowser.open('http://localhost:5000'))
+            self._log('Servidor web iniciado com sucesso')
         except Exception as e:
-            self.status_web.config(text="🌐 Web: erro")
-            print(f"[Web] Erro ao iniciar servidor: {e}")
-
-    def _run_web(self):
-        self.web_app.run(host='0.0.0.0', port=5000, debug=False, use_reloader=False)
+            if hasattr(self, 'status_web') and self.status_web:
+                self.status_web.config(text="🌐 Web: erro")
+            self._log(f'Erro servidor web: {e}')
+            _tb = traceback.format_exc()
+            self._log(f'Traceback: {_tb}')
+            # direct fallback write in case _log fails
+            try:
+                _tb_path = os.path.join(DB_DIR, 'traceback.log')
+                with open(_tb_path, 'w', encoding='utf-8') as _tf:
+                    _tf.write(_tb)
+                    _tf.flush()
+            except:
+                pass
 
     def _on_closing(self):
         self.root.destroy()
@@ -461,8 +630,14 @@ class CyberbullyingApp:
         try:
             with open(os.path.join(DB_DIR, 'debug.log'), 'a', encoding='utf-8') as f:
                 f.write(f'[{datetime.now().strftime("%H:%M:%S")}] {msg}\n')
-        except:
-            pass
+                f.flush()
+        except Exception as _e:
+            try:
+                _p = os.path.join(DB_DIR, 'debug_fallback.log')
+                with open(_p, 'a', encoding='utf-8') as _ff:
+                    _ff.write(f'[{datetime.now().strftime("%H:%M:%S")}] {msg}\n')
+            except:
+                pass
 
     def _criar_card(self, parent, titulo, valor, bg, fg, emoji=''):
         card = tk.Frame(parent, bg=CORES['card'], highlightbackground=CORES['border'],
@@ -873,6 +1048,33 @@ class CyberbullyingApp:
         messagebox.showinfo('Sucesso', f'📥 {len(testes)} comentários importados e analisados!')
         self._carregar_alertas()
 
+    def _importar_testes_silent(self):
+        testes = [
+            ('Voce e um idiota, desapareca daqui!', 'User123'),
+            ('Ola pessoal, tudo bem?', 'Maria'),
+            ('Mucolesse sonhi curi atxu essue', 'User456'),
+            ('Gostei muito deste post!', 'Joao'),
+            ('Vai te foder, seu estupido!', 'Anonimo'),
+            ('Bom dia para todos', 'Ana'),
+            ('Odeio voces todos', 'User789'),
+            ('Que otimo dia', 'Pedro'),
+            ('Cucaujola voce e', 'User101'),
+            ('Concordo plenamente', 'Sofia'),
+        ]
+        conn = sqlite3.connect(DB_PATH)
+        c = conn.cursor()
+        for texto, autor in testes:
+            r = self.detector.analisar(texto)
+            girias_str = ', '.join([g['termo'] for g in r['girias']])
+            c.execute("INSERT INTO comentarios (fonte_id, texto, autor, data) VALUES (1, ?, ?, ?)",
+                      (texto, autor, datetime.now().isoformat()))
+            com_id = c.lastrowid
+            c.execute("INSERT INTO analises (comentario_id, classificacao, confianca, girias, data) VALUES (?, ?, ?, ?, ?)",
+                      (com_id, r['classificacao'], r['confianca'], girias_str, datetime.now().isoformat()))
+        conn.commit()
+        conn.close()
+        self._carregar_alertas()
+
     def _carregar_alertas(self):
         for item in self.tree_alertas.get_children():
             self.tree_alertas.delete(item)
@@ -1251,21 +1453,8 @@ class LoginDialog:
         return self.autenticado, getattr(self, 'papel', 'moderador'), getattr(self, 'login_id', None), getattr(self, 'login_nome', None)
 
 
-def _iniciar_servidor_web():
-    try:
-        import app
-        from app import create_app, socketio
-        os.environ['CYBERBULLYING_DB_PATH'] = DB_PATH
-        web_app = create_app()
-        socketio.run(web_app, host='0.0.0.0', port=5000, debug=False, allow_unsafe_werkzeug=True)
-    except Exception as e:
-        _debug_log(f'Erro servidor web: {e}')
-
 def main():
     _setup_db(DB_PATH)
-    t = threading.Thread(target=_iniciar_servidor_web, daemon=True)
-    t.start()
-    webbrowser.open('http://localhost:5000')
     login = LoginDialog()
     ok, papel, login_id, login_nome = login.run()
     if ok:

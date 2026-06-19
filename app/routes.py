@@ -1,8 +1,10 @@
 import bcrypt
 from flask import Blueprint, jsonify, request, render_template, session, redirect, url_for
-from datetime import datetime
+from datetime import datetime, timedelta
 from functools import wraps
-from app import db, socketio
+from sqlalchemy import func
+from app import db
+import app as _app
 from app.models import Usuario, Fonte, Comentario, Analise, Giria
 from app.detector import detector
 
@@ -87,6 +89,30 @@ def get_estatisticas():
         'casos_criticos': casos_criticos,
         'casos_resolvidos': casos_resolvidos,
         'taxa_deteccao': round((casos_criticos / total_analisados * 100), 2) if total_analisados > 0 else 0
+    })
+
+@bp.route('/api/dashboard', methods=['GET'])
+@login_required
+def get_dashboard():
+    total_analises = Analise.query.count()
+    por_classificacao = db.session.query(
+        Analise.classificacao, func.count(Analise.id).label('total')
+    ).group_by(Analise.classificacao).all()
+    por_fonte = db.session.query(
+        Fonte.nome, func.count(Analise.id).label('total')
+    ).join(Comentario, Fonte.id == Comentario.fonte_id
+    ).join(Analise, Comentario.id == Analise.comentario_id
+    ).group_by(Fonte.nome).all()
+    sete_dias = datetime.now() - timedelta(days=7)
+    tendencia = db.session.query(
+        func.date(Analise.data).label('dia'),
+        func.count(Analise.id).label('total')
+    ).filter(Analise.data >= sete_dias.isoformat()
+    ).group_by(func.date(Analise.data)).order_by(func.date(Analise.data)).all()
+    return jsonify({
+        'por_classificacao': [{'classificacao': c, 'total': t} for c, t in por_classificacao],
+        'por_fonte': [{'fonte': f, 'total': t} for f, t in por_fonte],
+        'tendencia': [{'dia': d, 'total': t} for d, t in tendencia],
     })
 
 @bp.route('/api/usuarios', methods=['GET'])
@@ -190,8 +216,8 @@ def adicionar_comentario():
     db.session.add(analise)
     db.session.commit()
 
-    if resultado['confianca'] >= 50:
-        socketio.emit('novo_alerta', {
+    if resultado['confianca'] >= 50 and _app.socketio is not None:
+        _app.socketio.emit('novo_alerta', {
             'id': analise.id,
             'classificacao': resultado['classificacao'],
             'confianca': resultado['confianca'],
@@ -228,7 +254,8 @@ def resolver_analise(id):
     analise = Analise.query.get_or_404(id)
     analise.resolvido = 1
     db.session.commit()
-    socketio.emit('alerta_resolvido', {'id': id})
+    if _app.socketio is not None:
+        _app.socketio.emit('alerta_resolvido', {'id': id})
     return jsonify(analise.to_dict())
 
 @bp.route('/api/alertas', methods=['GET'])
@@ -283,8 +310,8 @@ def detectar_cyberbullying():
                       confianca=resultado['confianca'], girias=girias_str, data=now)
     db.session.add(analise)
     db.session.commit()
-    if resultado['confianca'] >= 50:
-        socketio.emit('novo_alerta', {
+    if resultado['confianca'] >= 50 and _app.socketio is not None:
+        _app.socketio.emit('novo_alerta', {
             'id': analise.id,
             'classificacao': resultado['classificacao'],
             'confianca': resultado['confianca'],
