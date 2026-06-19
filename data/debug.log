@@ -1,0 +1,14 @@
+2026-06-11T10:07:32.238714 | _setup_db START path=C:\Users\AJESF\OneDrive\Documents\New folder\cyberbullying_detector\data\cyberbullying.db
+2026-06-11T10:07:32.263682 | _setup_db total_usuarios=3
+2026-06-11T10:07:32.264577 |   user id=1 nome=Alberto Baptista senha=$2b$12$4DNCFwrS1GpLzWfqYlmWPu5HUeMd1KMofuVk104sfmUWsz7SNGdU2 papel=admin
+2026-06-11T10:07:32.265117 |   user id=2 nome=Augusta Mulungia senha=$2b$12$amEu34KAXOMh/givIv6dPeS63xWv5/fl14OQnK5CeOr0wHLS/OPMC papel=moderador
+2026-06-11T10:07:32.265355 |   user id=3 nome=Rafael Mussumari senha=$2b$12$I7wQ/OruCK4SgbWYNAz9s.OoGrWe2iKauxtjE34rGptM0EXpfqc4a papel=moderador
+2026-06-11T10:07:32.729978 | _setup_db FINAL user id=1 nome=Alberto Baptista senha=$2b$12$4DNCFwrS1GpLzWfqYlmWPu5HUeMd1KMofuVk104sfmUWsz7SNGdU2 papel=admin
+2026-06-11T10:07:32.732074 | _setup_db END
+2026-06-19T10:34:17.138149 | _setup_db START path=C:\Users\AJESF\OneDrive\Documents\New folder\cyberbullying_detector\data\cyberbullying.db
+2026-06-19T10:34:17.159823 | _setup_db total_usuarios=3
+2026-06-19T10:34:17.161081 |   user id=1 nome=Alberto Baptista senha=$2b$12$4DNCFwrS1GpLzWfqYlmWPu5HUeMd1KMofuVk104sfmUWsz7SNGdU2 papel=admin
+2026-06-19T10:34:17.162278 |   user id=2 nome=Augusta Mulungia senha=$2b$12$amEu34KAXOMh/givIv6dPeS63xWv5/fl14OQnK5CeOr0wHLS/OPMC papel=moderador
+2026-06-19T10:34:17.163156 |   user id=3 nome=Rafael Mussumari senha=$2b$12$I7wQ/OruCK4SgbWYNAz9s.OoGrWe2iKauxtjE34rGptM0EXpfqc4a papel=moderador
+2026-06-19T10:34:17.602246 | _setup_db FINAL user id=1 nome=Alberto Baptista senha=$2b$12$4DNCFwrS1GpLzWfqYlmWPu5HUeMd1KMofuVk104sfmUWsz7SNGdU2 papel=admin
+2026-06-19T10:34:17.603234 | _setup_db END
