@@ -228,6 +228,7 @@ Acesso: http://localhost:5000
 
 | Botao | Visivel para | Descricao |
 |---|---|---|
+| Dashboard | Todos | Graficos interativos (classificacao, fonte, tendencia 7 dias) com Chart.js |
 | Analise | Todos | Inserir texto e classificar |
 | Alertas | Todos | Alertas pendentes (>= 50% confianca) |
 | Analises | Todos | Historico de analises |
@@ -314,6 +315,7 @@ Todas as rotas (exceto `/login` e `/logout`) requerem autenticacao por sessao. R
 |---|---|---|---|
 | GET | `/` | Autenticado | Pagina principal (dashboard) |
 | GET | `/api/estatisticas` | Autenticado | Estatisticas gerais do sistema |
+| GET | `/api/dashboard` | Autenticado | Dados agregados para graficos (por classificacao, por fonte, tendencia 7 dias) |
 | GET | `/api/alertas` | Autenticado | Alertas pendentes (confianca >= 50%, nao resolvidos) |
 | GET | `/api/analises` | Autenticado | Ultimas 100 analises com detalhes |
 | POST | `/api/analises/<id>/resolver` | Autenticado | Marcar analise como resolvida |

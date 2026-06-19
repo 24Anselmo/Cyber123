@@ -14,7 +14,8 @@ Sistema multiplataforma para deteção de cyberbullying em texto, com interface 
 - **Classificador BERT** — `distilbert-base-multilingual-cased` para deteção complementar via similaridade de cosseno (fallback para rule-based se modelo não carregar)
 - **Alertas inteligentes** — threshold >= 50% de confiança com WebSockets em tempo real
 - **Notificações browser** — notificações nativas ao receber novo alerta
-- **Painel web** — sidebar com páginas: Análise, Alertas, Análises, Fontes, Dicionário, Usuários, Relatório
+- **Dashboard com gráficos** — página inicial com gráficos Chart.js (doughnut: classificação, bar: fontes, line: tendência 7 dias)
+- **Painel web** — sidebar com páginas: Dashboard, Análise, Alertas, Análises, Fontes, Dicionário, Usuários, Relatório
 - **Aplicação desktop** — interface Tkinter com as mesmas funcionalidades
 - **BD partilhado** — web e desktop escrevem na mesma base SQLite
 - **Auto-save** — toda análise é guardada automaticamente
@@ -143,6 +144,7 @@ Todas as rotas requerem autenticação por sessão (login via `/login`). Retorna
 | POST   | `/login`                          | Autenticar                         |
 | GET    | `/logout`                         | Terminar sessão                    |
 | GET    | `/api/estatisticas`               | Estatísticas gerais                |
+| GET    | `/api/dashboard`                  | Dados agregados para gráficos (classificação, fonte, tendência 7 dias) |
 | GET    | `/api/alertas`                    | Alertas pendentes (confiança >= 50)|
 | GET    | `/api/analises`                   | Últimas 100 análises               |
 | POST   | `/api/analises/<id>/resolver`     | Marcar análise como resolvida      |
