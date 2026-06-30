@@ -321,6 +321,23 @@ python -m pytest tests/ -v
 
 ---
 
+## Modo Offline
+
+O sistema funciona **100% offline** sem depender de internet.
+
+| Módulo | Requer Internet? | Comportamento Offline |
+|---|---|---|
+| Motor rule-based, NLP, ML, Sarcasmo | ❌ Não | Totalmente funcional |
+| Dashboard, alertas, relatórios | ❌ Não | SQLite + Chart.js local |
+| BERT classifier | ❌ Não (desligado por defeito) | Fallback para rule-based |
+| Notificações (Email/Telegram/Discord) | ✅ Sim | Desativado silenciosamente |
+| Monitores (Twitter, YouTube, Instagram) | ✅ Sim | Dados simulados localmente |
+| Monitor Facebook | ✅ Sim | Dados simulados localmente |
+
+Todas as variáveis de ambiente/tokens de API são **opcionais**. Sem elas, o sistema funciona perfeitamente — monitores geram comentários de exemplo para demonstração e notificações são ignoradas.
+
+---
+
 ## Desktop (Tkinter)
 
 ### Abas

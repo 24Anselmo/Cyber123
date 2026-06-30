@@ -37,33 +37,48 @@ Sistema multiplataforma para detecao de cyberbullying em texto, desenvolvido par
 | Dicionario alargado | 170+ palavras ofensivas + 80+ girias regionais angolanas (Lunda-Sul) |
 | Classificacao por niveis | critico, alto, medio, baixo, neutro |
 | Classificador BERT | distilbert-base-multilingual-cased como complemento ao motor rule-based |
+| NLP Avancado | Detecao de idioma, stemming (RSLP/Porter), lematizacao (spaCy), dialetos angolanos |
+| Machine Learning | LogisticRegression treinado com dados locais + detecao de sarcasmo |
 | Alertas inteligentes | Threshold >= 50% de confianca (Suspeito+) |
+| Notificacoes multi-canal | Email (SMTP), Telegram Bot, Discord Webhook |
 | Notificacoes em tempo real | WebSockets (Flask-SocketIO) com notificacoes nativas no browser |
 | Interface web e desktop | Mesma BD partilhada, mesma experiencia |
 | Autenticacao RBAC | Login protegido com senhas hasheadas (bcrypt); papeis: admin / moderador |
 | Auto-save | Toda analise e guardada automaticamente na BD |
 | Exportacao de relatorios | CSV, TXT e PDF |
-| Monitorizacao Facebook | Integracao com Graph API para monitorizar paginas |
+| Monitorizacao multi-plataforma | Facebook, Twitter/X, YouTube, Instagram (com modo offline) |
+| API publica | Tokens Bearer com rate limiting (30 req/min) |
+| Administracao | Logs de auditoria, bloqueio de IP, backup automatico da BD |
+| Relatorios avancados | Relatorio comparativo por periodo, agendamento por email |
+| Internacionalizacao | Interface em Portugues, Ingles e Frances |
+| Funcionamento offline | 100% funcional sem internet (modulos online usam dados simulados) |
 | Testes automatizados | 15 testes pytest (detecao, API, autenticacao) |
 | Executavel autonomo | EXE --onefile (PyInstaller) sem dependencias externas |
+| Docker | Dockerfile + docker-compose para deploy simplificado |
 | Repositorio GitHub | https://github.com/24Anselmo/Cyber123 |
 
 ### 1.2 Tecnologias
 
 | Componente | Tecnologia |
-|---|---|
+|---|---|---|
 | Servidor web | Flask 3.0 + Flask-SocketIO |
 | ORM | SQLAlchemy + SQLite (WAL mode) |
 | Frontend | HTML5, CSS3, JavaScript (vanilla) |
 | Interface desktop | Tkinter (Python) |
 | Motor de detecao | Rule-based (dicionario + pesos) + BERT |
+| NLP | langdetect, NLTK (RSLP/Porter), spaCy |
+| ML | scikit-learn (TF-IDF + LogisticRegression) |
+| Sarcasmo | TextBlob (sentiment analysis) |
 | Autenticacao | bcrypt (senhas hasheadas) |
 | WebSockets | Flask-SocketIO + eventlet / threading |
 | BERT | transformers + torch (distilbert-base-multilingual-cased) |
 | PDF | fpdf2 |
 | CORS | Flask-CORS |
+| Notificacoes | SMTP, Telegram Bot API, Discord Webhook |
+| Monitorizacao | Facebook Graph API, Twitter API v2, YouTube Data API, Instagram Graph API |
 | Testes | pytest |
 | Empacotamento | PyInstaller (EXE --onefile / --onedir) |
+| Docker | Docker + docker-compose |
 | Repositorio | Git + GitHub |
 
 ---
@@ -75,22 +90,35 @@ Sistema multiplataforma para detecao de cyberbullying em texto, desenvolvido par
 ```
 cyberbullying_detector/
 +-- app/                                # Aplicacao Web (Flask)
-|   +-- __init__.py                     # Factory, BD, CORS, SocketIO, migracao
+|   +-- __init__.py                     # Factory, BD, CORS, SocketIO, inits
 |   +-- models.py                       # Modelos SQLAlchemy
-|   +-- routes.py                       # Endpoints REST + login + PDF
+|   +-- routes.py                       # Endpoints REST + login + PDF + novos
 |   +-- detector.py                     # Motor de detecao (singleton rule-based)
 |   +-- bert_classifier.py              # Classificador BERT (distilbert)
+|   +-- nlp_advanced.py                 # NLP: idioma, stemming, lematizacao
+|   +-- ml_trainer.py                   # ML: treino, classificacao, sarcasmo
+|   +-- notifications.py                # Email, Telegram, Discord
+|   +-- admin_tools.py                  # Auditoria, backup, bloqueio IP
+|   +-- api_tokens.py                   # Tokens API + rate limiting
+|   +-- i18n.py                         # Internacionalizacao
+|   +-- translations/                   # Ficheiros de traducao (pt/en/fr)
+|   |   +-- pt.json
+|   |   +-- en.json
+|   |   +-- fr.json
 |   +-- facebook_api.py                 # Monitorizacao Facebook Graph API
+|   +-- monitor_twitter.py              # Monitorizacao Twitter/X API
+|   +-- monitor_youtube.py              # Monitorizacao YouTube Data API
+|   +-- monitor_instagram.py            # Monitorizacao Instagram Graph API
 |   +-- socket_events.py                # Eventos WebSocket
 |   +-- static/
 |   |   +-- css/style.css               # Estilos responsivos
 |   |   +-- js/main.js                  # Logica frontend completa
 |   |   +-- logo.png                    # Logotipo
 |   +-- templates/
-|       +-- index.html                  # Dashboard principal
+|       +-- index.html                  # Dashboard principal (+ novas paginas)
 |       +-- login.html                  # Pagina de autenticacao
 +-- offline/                            # Aplicacao Desktop
-|   +-- desktop_app.py                  # UI Tkinter
+|   +-- desktop_app.py                  # UI Tkinter (+ NLP, ML, Monitor)
 |   +-- logo.png                        # Logotipo desktop
 |   +-- CyberbullyingDetector.spec      # Configuracao PyInstaller
 |   +-- dist/
@@ -99,6 +127,12 @@ cyberbullying_detector/
 |   +-- cyberbullying.db                # Base de dados SQLite
 |   +-- local_dictionary.json           # Dicionario local (80+ girias)
 |   +-- debug.log                       # Log de diagnostico
+|   +-- audit.log                       # Log de auditoria
+|   +-- api_tokens.json                 # Tokens de API persistidos
+|   +-- backups/                        # Backups automaticos da BD
++-- models/                             # Modelos ML treinados
+|   +-- cyberbullying_model.pkl
+|   +-- vectorizer.pkl
 +-- tests/                              # Testes automatizados
 |   +-- conftest.py                     # Fixture BD temporario
 |   +-- test_detector.py                # Testes do motor de detecao (6)
@@ -108,6 +142,9 @@ cyberbullying_detector/
 +-- DOCUMENTACAO.md                     # Documentacao (Markdown)
 +-- README.md                           # Manual rapido
 +-- README_SO.md                        # Comandos SO
++-- Dockerfile                          # Imagem Docker
++-- docker-compose.yml                  # Orquestracao Docker
++-- .env.example                        # Exemplo de variaveis de ambiente
 +-- requirements.txt                    # Dependencias Python
 +-- run.py                              # Ponto de entrada web
 ```
@@ -476,6 +513,45 @@ O `bert_classifier.py` implementa um classificador baseado no modelo `distilbert
 ### 7.3 Integracao
 
 O classificador BERT e chamado apos o motor rule-based. Se a confianca do BERT for superior a do motor rule-based, a classificacao final usa o resultado do BERT. Caso contrario, prevalece o resultado rule-based.
+
+> **Nota:** Por defeito, o BERT esta desativado (`use_bert=False`). O motor rule-based, NLP e ML funcionam 100% offline.
+
+---
+
+## 7.5 Modo Offline
+
+O sistema foi projetado para funcionar **completamente offline** sem depender de internet. Abaixo o estado de cada modulo:
+
+| Modulo | Requer Internet? | Comportamento Offline |
+|---|---|---|
+| Motor rule-based (dicionario + pesos) | Nao | Sempre funcional |
+| NLP (idioma, stemming, lematizacao) | Nao | Bibliotecas locais (NLTK, spaCy, langdetect) |
+| ML (treino e classificacao) | Nao | Dados da BD local, modelo salvo em `.pkl` |
+| Detecao de sarcasmo | Nao | TextBlob + regras locais |
+| BERT classifier | Nao por defeito | Fallback para Neutro se ativado sem modelo |
+| Dashboard, graficos, alertas | Nao | Tudo local (SQLite + Chart.js) |
+| Notificacoes (Email/Telegram/Discord) | Sim | Silenciosamente desativado se sem configuracao |
+| Monitorizacao Facebook/Twitter/YouTube/Instagram | Sim | Gera dados simulados localmente |
+
+### Variaveis de Ambiente (todas opcionais)
+
+| Variavel | Servico | Obrigatoria? |
+|---|---|---|
+| `FACEBOOK_ACCESS_TOKEN` | Facebook Graph API | Nao (modo simulado) |
+| `TWITTER_BEARER_TOKEN` | Twitter/X API v2 | Nao (modo simulado) |
+| `YOUTUBE_API_KEY` | YouTube Data API | Nao (modo simulado) |
+| `INSTAGRAM_ACCESS_TOKEN` | Instagram Graph API | Nao (modo simulado) |
+| `SMTP_HOST/PORT/USER/PASS` | Email (SMTP) | Nao (desativado) |
+| `TELEGRAM_BOT_TOKEN` / `TELEGRAM_CHAT_ID` | Telegram Bot | Nao (desativado) |
+| `DISCORD_WEBHOOK_URL` | Discord Webhook | Nao (desativado) |
+
+### Comportamento Offline
+
+Quando uma API externa nao esta configurada ou a internet falha:
+- **Monitores** (Facebook, Twitter, YouTube, Instagram): geram comentarios de exemplo localmente para demonstracao
+- **Notificacoes**: retornam silenciosamente sem erro
+- **Requisicoes HTTP**: timeout reduzido para 5 segundos para nunca travar a interface
+- **NLP, ML, Sarcasmo, Dicionario, Dashboard**: funcionam normalmente
 
 ---
 
