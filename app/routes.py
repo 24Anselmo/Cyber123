@@ -109,10 +109,21 @@ def get_dashboard():
         func.count(Analise.id).label('total')
     ).filter(Analise.data >= sete_dias.isoformat()
     ).group_by(func.date(Analise.data)).order_by(func.date(Analise.data)).all()
+    palavras_db = db.session.query(Analise.girias).filter(
+        Analise.girias != '', Analise.girias.isnot(None)
+    ).all()
+    freq = {}
+    for (girias_str,) in palavras_db:
+        for g in girias_str.split(','):
+            g = g.strip().lower()
+            if g:
+                freq[g] = freq.get(g, 0) + 1
+    top_palavras = sorted(freq.items(), key=lambda x: -x[1])[:30]
     return jsonify({
         'por_classificacao': [{'classificacao': c, 'total': t} for c, t in por_classificacao],
         'por_fonte': [{'fonte': f, 'total': t} for f, t in por_fonte],
         'tendencia': [{'dia': d, 'total': t} for d, t in tendencia],
+        'palavras_frequentes': [{'termo': p, 'total': c} for p, c in top_palavras],
     })
 
 @bp.route('/api/usuarios', methods=['GET'])

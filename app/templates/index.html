@@ -19,7 +19,10 @@
                 </div>
             </div>
             <button class="nav-toggle" onclick="toggleSidebar()">☰</button>
-            <a href="/logout" class="nav-logout" title="Terminar sessão">🚪 Sair</a>
+            <div class="nav-actions">
+                <button class="nav-btn" id="btn-dark-mode" onclick="toggleDarkMode()" title="Modo escuro">🌙</button>
+                <a href="/logout" class="nav-logout" title="Terminar sessão">🚪 Sair</a>
+            </div>
         </div>
     </nav>
 
@@ -87,6 +90,10 @@
                         <div class="chart-box chart-full">
                             <canvas id="chart-tendencia"></canvas>
                         </div>
+                        <div class="chart-box chart-full">
+                            <h3 style="margin:0 0 0.5rem;font-size:0.85rem;color:var(--text-sec)">☁️ Palavras Mais Frequentes</h3>
+                            <div id="word-cloud" style="min-height:160px;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px;padding:0.5rem"></div>
+                        </div>
                     </div>
                 </section>
             </div>
@@ -111,7 +118,18 @@
 
             <div id="page-analises" class="page">
                 <section class="section">
-                    <h2>📊 Últimas Análises</h2>
+                    <h2>📊 Análises</h2>
+                    <div class="filter-bar">
+                        <select id="filter-classificacao" onchange="carregarAnalises()">
+                            <option value="">Todas classificações</option>
+                            <option value="Crítico">Crítico</option>
+                            <option value="Ofensivo">Ofensivo</option>
+                            <option value="Suspeito">Suspeito</option>
+                            <option value="Neutro">Neutro</option>
+                        </select>
+                        <input type="text" id="filter-busca" placeholder="🔍 Buscar texto..." oninput="carregarAnalises()">
+                        <span id="analises-info" style="font-size:0.8rem;color:#666;align-self:center"></span>
+                    </div>
                     <div class="table-container">
                         <table id="analises-table">
                             <thead><tr>

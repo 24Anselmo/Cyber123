@@ -13,6 +13,9 @@ async function api(endpoint, options = {}) {
 }
 
 const icones_nivel = {'critico': '🔴', 'alto': '🟠', 'medio': '🟡', 'baixo': '🟤', 'neutro': '⚪'};
+let _analisesData = [];
+let _analisesPage = 1;
+const _analisesPerPage = 15;
 
 function mostrarPagina(nome) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -72,27 +75,51 @@ async function carregarAlertas() {
 
 async function carregarAnalises() {
     try {
-        const analises = await api('/api/analises');
-        const tbody = document.getElementById('analises-body');
-        if (analises.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="8" class="empty-message">Nenhuma análise realizada</td></tr>';
-            return;
-        }
-        tbody.innerHTML = analises.map(a => {
-            const classLower = a.classificacao.toLowerCase();
-            return `<tr>
-                <td>${new Date(a.data).toLocaleDateString('pt-AO')}</td>
-                <td>${a.comentario.autor || 'Anónimo'}</td>
-                <td class="truncate" title="${a.comentario.texto}">${a.comentario.texto}</td>
-                <td><span class="classificacao ${classLower}">${a.classificacao}</span></td>
-                <td>${a.confianca}%</td>
-                <td>${a.girias || '-'}</td>
-                <td>${a.nivel_geral ? icones_nivel[a.nivel_geral] || '' : ''}</td>
-                <td>${!a.resolvido ? `<button class="small success" onclick="resolverAnalise(${a.id})">✓</button>` : '<span style="color:#16a34a">✓</span>'}</td>
-            </tr>`;
-        }).join('');
+        _analisesData = await api('/api/analises');
+        _analisesPage = 1;
+        _renderAnalises();
     } catch (e) { console.error('Erro ao carregar análises:', e); }
 }
+
+function _renderAnalises() {
+    const filtroClass = document.getElementById('filter-classificacao').value;
+    const busca = document.getElementById('filter-busca').value.toLowerCase().trim();
+    let dados = _analisesData;
+    if (filtroClass) dados = dados.filter(a => a.classificacao === filtroClass);
+    if (busca) dados = dados.filter(a => (a.comentario.texto || '').toLowerCase().includes(busca));
+    const total = dados.length;
+    const totalPag = Math.max(1, Math.ceil(total / _analisesPerPage));
+    if (_analisesPage > totalPag) _analisesPage = totalPag;
+    const inicio = (_analisesPage - 1) * _analisesPerPage;
+    const pagina = dados.slice(inicio, inicio + _analisesPerPage);
+    const tbody = document.getElementById('analises-body');
+    const info = document.getElementById('analises-info');
+    info.textContent = total ? `${inicio + 1}-${Math.min(inicio + _analisesPerPage, total)} de ${total}` : '0 resultados';
+    if (pagina.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" class="empty-message">Nenhuma análise encontrada</td></tr>';
+        document.getElementById('analises-pagination').innerHTML = '';
+        return;
+    }
+    tbody.innerHTML = pagina.map(a => {
+        const classLower = a.classificacao.toLowerCase();
+        return `<tr>
+            <td>${new Date(a.data).toLocaleDateString('pt-AO')}</td>
+            <td>${a.comentario.autor || 'Anónimo'}</td>
+            <td class="truncate" title="${a.comentario.texto}">${a.comentario.texto}</td>
+            <td><span class="classificacao ${classLower}">${a.classificacao}</span></td>
+            <td>${a.confianca}%</td>
+            <td>${a.girias || '-'}</td>
+            <td>${a.nivel_geral ? icones_nivel[a.nivel_geral] || '' : ''}</td>
+            <td>${!a.resolvido ? `<button class="small success" onclick="resolverAnalise(${a.id})">✓</button>` : '<span style="color:#16a34a">✓</span>'}</td>
+        </tr>`;
+    }).join('');
+    let pagHtml = '';
+    if (_analisesPage > 1) pagHtml += `<button class="small" onclick="_irPag(${_analisesPage - 1})">‹ Anterior</button> `;
+    pagHtml += `<span style="font-size:0.8rem;padding:0 0.5em">Pág. ${_analisesPage} de ${totalPag}</span> `;
+    if (_analisesPage < totalPag) pagHtml += `<button class="small" onclick="_irPag(${_analisesPage + 1})">Seguinte ›</button>`;
+    document.getElementById('analises-pagination').innerHTML = pagHtml;
+}
+function _irPag(p) { _analisesPage = p; _renderAnalises(); }
 
 async function carregarFontes() {
     try {
@@ -399,6 +426,17 @@ async function carregarDashboard() {
                 }
             });
         }
+        const wc = document.getElementById('word-cloud');
+        if (wc && data.palavras_frequentes) {
+            const maxC = Math.max(...data.palavras_frequentes.map(p => p.total), 1);
+            wc.innerHTML = data.palavras_frequentes.map(p => {
+                const ratio = p.total / maxC;
+                const size = 0.75 + ratio * 1.25;
+                const opac = 0.6 + ratio * 0.4;
+                return `<span style="font-size:${size}rem;opacity:${opac};color:#2563eb;cursor:default;transition:transform 0.15s" title="${p.total}x">${p.termo}</span>`;
+            }).join('');
+        } else if (wc) { wc.innerHTML = '<span style="color:#999">Sem dados</span>'; }
+
         if (_chartTendencia) { _chartTendencia.destroy(); }
         const ctx3 = document.getElementById('chart-tendencia');
         if (ctx3) {
@@ -427,6 +465,14 @@ async function carregarDashboard() {
     } catch (e) { console.error('Erro ao carregar dashboard:', e); }
 }
 
+function toggleDarkMode() {
+    const html = document.documentElement;
+    const ativo = html.getAttribute('data-theme') === 'dark';
+    html.setAttribute('data-theme', ativo ? 'light' : 'dark');
+    localStorage.setItem('dark-mode', ativo ? '0' : '1');
+    document.getElementById('btn-dark-mode').textContent = ativo ? '🌙' : '☀️';
+}
+
 function carregarTudo() {
     carregarEstatisticas(); carregarAlertas(); carregarAnalises();
     carregarFontes(); carregarDicionario(); carregarUsuarios(); carregarDashboard();
@@ -436,6 +482,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const papel = document.documentElement.dataset.papel || 'moderador';
     if (papel !== 'admin') {
         document.querySelectorAll('[data-admin]').forEach(el => el.style.display = 'none');
+    }
+    if (localStorage.getItem('dark-mode') === '1') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        document.getElementById('btn-dark-mode').textContent = '☀️';
     }
     carregarTudo();
     setInterval(carregarTudo, 5000);
