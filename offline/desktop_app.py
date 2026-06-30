@@ -179,11 +179,17 @@ class CyberbullyingApp:
         self.tab_fontes = ttk.Frame(self.notebook)
         self.tab_relatorio = ttk.Frame(self.notebook)
         self.tab_usuarios = ttk.Frame(self.notebook)
+        self.tab_ml = ttk.Frame(self.notebook)
+        self.tab_nlp = ttk.Frame(self.notebook)
+        self.tab_monitor = ttk.Frame(self.notebook)
         papel = self.papel
         self.notebook.add(self.tab_analise, text='🔍 Análise')
         self.notebook.add(self.tab_alertas, text='🚨 Alertas')
         self.notebook.add(self.tab_dicionario, text='📚 Dicionário')
         self.notebook.add(self.tab_fontes, text='📰 Fontes')
+        self.notebook.add(self.tab_nlp, text='🌍 NLP')
+        self.notebook.add(self.tab_ml, text='🤖 ML')
+        self.notebook.add(self.tab_monitor, text='📡 Monitor')
         if papel == 'admin':
             self.notebook.add(self.tab_relatorio, text='📄 Relatório')
             self.notebook.add(self.tab_usuarios, text='👥 Usuários')
@@ -209,6 +215,9 @@ class CyberbullyingApp:
         self._build_alertas()
         self._build_dicionario()
         self._build_fontes()
+        self._build_nlp()
+        self._build_ml()
+        self._build_monitor()
         if papel == 'admin':
             self._build_relatorio()
             self._build_usuarios()
@@ -606,6 +615,181 @@ class CyberbullyingApp:
         ttk.Button(f, text="🗑️  Remover Selecionada", command=self._remover_fonte, style='Danger.TButton').pack(anchor='w', pady=(8, 0))
 
         self._carregar_fontes()
+
+    def _build_nlp(self):
+        f = ttk.LabelFrame(self.tab_nlp, text="🌍  NLP Avançado", padding=15)
+        f.pack(fill='both', expand=True, padx=10, pady=10)
+
+        inp = tk.Frame(f, bg=CORES['card'])
+        inp.pack(fill='x')
+        tk.Label(inp, text="Texto para análise NLP:", font=('Segoe UI', 9),
+                 bg=CORES['card'], fg=CORES['text_sec']).pack(anchor='w')
+        self.txt_nlp = scrolledtext.ScrolledText(inp, height=4, font=('Segoe UI', 11))
+        self.txt_nlp.pack(fill='x', pady=5)
+
+        ttk.Button(inp, text="🌍 Analisar NLP", command=self._analisar_nlp).pack(pady=5)
+
+        self.txt_nlp_result = scrolledtext.ScrolledText(f, height=12, state='disabled',
+                                                         font=('Consolas', 10), bg='#f8fafc')
+        self.txt_nlp_result.pack(fill='both', expand=True, pady=(10, 0))
+
+    def _analisar_nlp(self):
+        texto = self.txt_nlp.get('1.0', tk.END).strip()
+        if not texto: return
+        try:
+            res = self.detector.nlp.analisar(texto) if self.detector.nlp else {'erro': 'NLP não disponível'}
+        except Exception as e:
+            res = {'erro': str(e)}
+        self.txt_nlp_result.config(state='normal')
+        self.txt_nlp_result.delete('1.0', tk.END)
+        for k, v in res.items():
+            self.txt_nlp_result.insert(tk.END, f'{k}: {v}\n')
+        self.txt_nlp_result.config(state='disabled')
+
+    def _build_ml(self):
+        f = ttk.LabelFrame(self.tab_ml, text="🤖  Machine Learning & Sarcasmo", padding=15)
+        f.pack(fill='both', expand=True, padx=10, pady=10)
+
+        if self.papel == 'admin':
+            ttk.Button(f, text="🎯 Treinar Modelo", command=self._treinar_ml).pack(anchor='w', pady=5)
+        self.lbl_ml = tk.Label(f, text="", font=('Segoe UI', 9), bg=CORES['card'])
+        self.lbl_ml.pack(anchor='w')
+
+        tk.Label(f, text="Texto para classificar com ML:", font=('Segoe UI', 9),
+                 bg=CORES['card'], fg=CORES['text_sec']).pack(anchor='w', pady=(10, 0))
+        self.txt_ml = scrolledtext.ScrolledText(f, height=3, font=('Segoe UI', 11))
+        self.txt_ml.pack(fill='x', pady=5)
+
+        btn_row = tk.Frame(f, bg=CORES['card'])
+        btn_row.pack(fill='x')
+        ttk.Button(btn_row, text="🤖 Classificar ML", command=self._classificar_ml).pack(side='left', padx=2)
+        ttk.Button(btn_row, text="😏 Detetar Sarcasmo", command=self._detetar_sarcasmo).pack(side='left', padx=2)
+
+        self.txt_ml_result = scrolledtext.ScrolledText(f, height=8, state='disabled',
+                                                        font=('Consolas', 10), bg='#f8fafc')
+        self.txt_ml_result.pack(fill='both', expand=True, pady=(10, 0))
+
+    def _treinar_ml(self):
+        self.lbl_ml.config(text='Treinando...', fg=CORES['info'])
+        try:
+            from app.ml_trainer import CyberbullyingML
+            ml = CyberbullyingML()
+            res = ml.treinar(forcar=True)
+            self.lbl_ml.config(text=f'✅ {res.get("msg", "OK")}', fg=CORES['success'])
+        except Exception as e:
+            self.lbl_ml.config(text=f'❌ {e}', fg=CORES['danger'])
+
+    def _classificar_ml(self):
+        texto = self.txt_ml.get('1.0', tk.END).strip()
+        if not texto: return
+        try:
+            from app.ml_trainer import CyberbullyingML
+            ml = CyberbullyingML()
+            res = ml.classificar(texto)
+        except Exception as e:
+            res = {'erro': str(e)}
+        self.txt_ml_result.config(state='normal')
+        self.txt_ml_result.delete('1.0', tk.END)
+        for k, v in res.items():
+            self.txt_ml_result.insert(tk.END, f'{k}: {v}\n')
+        self.txt_ml_result.config(state='disabled')
+
+    def _detetar_sarcasmo(self):
+        texto = self.txt_ml.get('1.0', tk.END).strip()
+        if not texto: return
+        try:
+            from app.ml_trainer import SarcasmoDetector
+            sd = SarcasmoDetector()
+            res = sd.detetar(texto)
+        except Exception as e:
+            res = {'erro': str(e)}
+        self.txt_ml_result.config(state='normal')
+        self.txt_ml_result.delete('1.0', tk.END)
+        for k, v in res.items():
+            self.txt_ml_result.insert(tk.END, f'{k}: {v}\n')
+        self.txt_ml_result.config(state='disabled')
+
+    def _build_monitor(self):
+        f = ttk.LabelFrame(self.tab_monitor, text="📡  Monitorização em Tempo Real", padding=15)
+        f.pack(fill='both', expand=True, padx=10, pady=10)
+
+        nb = ttk.Notebook(f)
+        nb.pack(fill='both', expand=True)
+
+        # Twitter tab
+        tw = ttk.Frame(nb)
+        nb.add(tw, text='🐦 Twitter/X')
+        tk.Label(tw, text="Query de busca:", font=('Segoe UI', 9)).pack(anchor='w', pady=5)
+        self.tw_entry = ttk.Entry(tw, width=40)
+        self.tw_entry.pack(fill='x', pady=5)
+        ttk.Button(tw, text="Analisar", command=self._monitor_twitter).pack(anchor='w')
+        self.tw_result = scrolledtext.ScrolledText(tw, height=10, state='disabled', font=('Consolas', 10))
+        self.tw_result.pack(fill='both', expand=True, pady=(10, 0))
+
+        # YouTube tab
+        yt = ttk.Frame(nb)
+        nb.add(yt, text='▶️ YouTube')
+        tk.Label(yt, text="Video ID:", font=('Segoe UI', 9)).pack(anchor='w', pady=5)
+        self.yt_entry = ttk.Entry(yt, width=40)
+        self.yt_entry.pack(fill='x', pady=5)
+        ttk.Button(yt, text="Analisar Comentários", command=self._monitor_youtube).pack(anchor='w')
+        self.yt_result = scrolledtext.ScrolledText(yt, height=10, state='disabled', font=('Consolas', 10))
+        self.yt_result.pack(fill='both', expand=True, pady=(10, 0))
+
+        # Instagram tab
+        ig = ttk.Frame(nb)
+        nb.add(ig, text='📸 Instagram')
+        tk.Label(ig, text="Media ID:", font=('Segoe UI', 9)).pack(anchor='w', pady=5)
+        self.ig_entry = ttk.Entry(ig, width=40)
+        self.ig_entry.pack(fill='x', pady=5)
+        ttk.Button(ig, text="Analisar Comentários", command=self._monitor_instagram).pack(anchor='w')
+        self.ig_result = scrolledtext.ScrolledText(ig, height=10, state='disabled', font=('Consolas', 10))
+        self.ig_result.pack(fill='both', expand=True, pady=(10, 0))
+
+    def _monitor_twitter(self):
+        query = self.tw_entry.get().strip()
+        if not query: return
+        try:
+            from app.monitor_twitter import TwitterMonitor
+            tm = TwitterMonitor()
+            res = tm.analisar_comentarios(query, self.detector)
+        except Exception as e:
+            res = {'erro': str(e)}
+        self.tw_result.config(state='normal')
+        self.tw_result.delete('1.0', tk.END)
+        for k, v in res.items():
+            self.tw_result.insert(tk.END, f'{k}: {v}\n')
+        self.tw_result.config(state='disabled')
+
+    def _monitor_youtube(self):
+        vid = self.yt_entry.get().strip()
+        if not vid: return
+        try:
+            from app.monitor_youtube import YouTubeMonitor
+            ym = YouTubeMonitor()
+            res = ym.analisar_comentarios(vid, self.detector)
+        except Exception as e:
+            res = {'erro': str(e)}
+        self.yt_result.config(state='normal')
+        self.yt_result.delete('1.0', tk.END)
+        for k, v in res.items():
+            self.yt_result.insert(tk.END, f'{k}: {v}\n')
+        self.yt_result.config(state='disabled')
+
+    def _monitor_instagram(self):
+        mid = self.ig_entry.get().strip()
+        if not mid: return
+        try:
+            from app.monitor_instagram import InstagramMonitor
+            im = InstagramMonitor()
+            res = im.analisar_comentarios(mid, self.detector)
+        except Exception as e:
+            res = {'erro': str(e)}
+        self.ig_result.config(state='normal')
+        self.ig_result.delete('1.0', tk.END)
+        for k, v in res.items():
+            self.ig_result.insert(tk.END, f'{k}: {v}\n')
+        self.ig_result.config(state='disabled')
 
     def _build_relatorio(self):
         f = ttk.LabelFrame(self.tab_relatorio, text="📊  Relatório e Estatísticas do Sistema", padding=15)

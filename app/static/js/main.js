@@ -478,6 +478,215 @@ function carregarTudo() {
     carregarFontes(); carregarDicionario(); carregarUsuarios(); carregarDashboard();
 }
 
+// === NOVAS FUNÇÕES: Monitorização Twitter ===
+async function monitorTwitter() {
+    const query = document.getElementById('twitter-query').value.trim();
+    if (!query) { alert('Digite uma query'); return; }
+    try {
+        const res = await api('/api/monitor/twitter', { method: 'POST', body: JSON.stringify({ query }) });
+        document.getElementById('twitter-resultado').innerHTML =
+            `<p>Total: ${res.total} | Analisados: ${res.analisados} | Ofensivos: ${(res.ofensivos || []).length}</p>`;
+    } catch (e) { console.error(e); alert('Erro ao monitorar Twitter'); }
+}
+
+// === NOVAS FUNÇÕES: Monitorização YouTube ===
+async function monitorYoutube() {
+    const video_id = document.getElementById('youtube-video-id').value.trim();
+    if (!video_id) { alert('Digite um video ID'); return; }
+    try {
+        const res = await api('/api/monitor/youtube', { method: 'POST', body: JSON.stringify({ video_id }) });
+        document.getElementById('youtube-resultado').innerHTML =
+            `<p>Total: ${res.total} | Analisados: ${res.analisados} | Ofensivos: ${(res.ofensivos || []).length}</p>`;
+    } catch (e) { console.error(e); alert('Erro ao monitorar YouTube'); }
+}
+
+// === NOVAS FUNÇÕES: Monitorização Instagram ===
+async function monitorInstagram() {
+    const media_id = document.getElementById('instagram-media-id').value.trim();
+    if (!media_id) { alert('Digite um media ID'); return; }
+    try {
+        const res = await api('/api/monitor/instagram', { method: 'POST', body: JSON.stringify({ media_id }) });
+        document.getElementById('instagram-resultado').innerHTML =
+            `<p>Total: ${res.total} | Analisados: ${res.analisados} | Ofensivos: ${(res.ofensivos || []).length}</p>`;
+    } catch (e) { console.error(e); alert('Erro ao monitorar Instagram'); }
+}
+
+// === NOVAS FUNÇÕES: ML ===
+async function treinarML() {
+    const box = document.getElementById('ml-treino-resultado');
+    box.innerHTML = '<p>Treinando...</p>';
+    try {
+        const res = await api('/api/ml/treinar', { method: 'POST', body: JSON.stringify({ forcar: true }) });
+        box.innerHTML = res.sucesso
+            ? `<p style="color:var(--success)">✅ ${res.msg}</p>`
+            : `<p style="color:var(--danger)">❌ ${res.erro || 'Erro'}</p>`;
+    } catch (e) { box.innerHTML = '<p style="color:var(--danger)">Erro ao treinar</p>'; }
+}
+
+async function classificarML() {
+    const texto = document.getElementById('ml-texto').value.trim();
+    if (!texto) { alert('Digite um texto'); return; }
+    try {
+        const res = await api('/api/ml/classificar', { method: 'POST', body: JSON.stringify({ texto }) });
+        document.getElementById('ml-classificacao-resultado').innerHTML =
+            `<p><strong>ML:</strong> ${res.classificacao} (${res.confianca}%)</p>` +
+            (res.probabilidades ? `<p style="font-size:0.8rem">${JSON.stringify(res.probabilidades)}</p>` : '');
+    } catch (e) { console.error(e); }
+}
+
+async function detetarSarcasmo() {
+    const texto = document.getElementById('sarcasmo-texto').value.trim();
+    if (!texto) { alert('Digite um texto'); return; }
+    try {
+        const res = await api('/api/sarcasmo/detetar', { method: 'POST', body: JSON.stringify({ texto }) });
+        const box = document.getElementById('sarcasmo-resultado');
+        box.innerHTML = res.sarcasmo
+            ? `<p style="color:var(--danger)">😏 Sarcasmo detetado! (${res.confianca}%)</p>`
+            : `<p style="color:var(--success)">✅ Sem sarcasmo (${res.confianca}%)</p>`;
+    } catch (e) { console.error(e); }
+}
+
+async function analisarNLP() {
+    const texto = document.getElementById('nlp-texto').value.trim();
+    if (!texto) { alert('Digite um texto'); return; }
+    try {
+        const res = await api('/api/nlp/analisar', { method: 'POST', body: JSON.stringify({ texto }) });
+        const box = document.getElementById('nlp-resultado');
+        box.innerHTML = `
+            <p><strong>Idioma:</strong> ${res.idioma || '?'} ${res.dialeto_angolano ? '(Dialeto: ' + res.dialeto_angolano + ')' : ''}</p>
+            <p><strong>Normalizado:</strong> ${res.normalizado}</p>
+            <p><strong>Stemming:</strong> ${res.stemmed}</p>
+            <p><strong>Lematizado:</strong> ${res.lematizado}</p>
+            <p><strong>Sem stopwords:</strong> ${res.sem_stopwords}</p>
+        `;
+    } catch (e) { console.error(e); }
+}
+
+// === NOVAS FUNÇÕES: Admin ===
+async function carregarLogs() {
+    try {
+        const logs = await api('/api/admin/logs');
+        const container = document.getElementById('logs-lista');
+        if (logs.length === 0) { container.innerHTML = '<p class="empty-message">Sem logs</p>'; return; }
+        container.innerHTML = logs.map(l =>
+            `<div style="padding:0.2rem 0;border-bottom:1px solid var(--border)">[${l.data}] ${l.usuario} | ${l.acao}</div>`
+        ).join('');
+    } catch (e) { console.error(e); }
+}
+
+async function fazerBackup() {
+    const box = document.getElementById('backup-resultado');
+    box.innerHTML = '<p>A gerar backup...</p>';
+    try {
+        const res = await api('/api/admin/backup', { method: 'POST' });
+        box.innerHTML = res.sucesso
+            ? `<p style="color:var(--success)">✅ Backup criado em: ${res.path}</p>`
+            : `<p style="color:var(--danger)">❌ ${res.erro}</p>`;
+    } catch (e) { box.innerHTML = '<p style="color:var(--danger)">Erro</p>'; }
+}
+
+async function bloquearIP() {
+    const ip = document.getElementById('bloquear-ip').value.trim();
+    const minutos = document.getElementById('bloquear-minutos').value || 60;
+    if (!ip) { alert('Digite um IP'); return; }
+    try {
+        const res = await api('/api/admin/ip-bloquear', { method: 'POST', body: JSON.stringify({ ip, minutos }) });
+        alert(res.message);
+    } catch (e) { console.error(e); }
+}
+
+async function desbloquearIP() {
+    const ip = document.getElementById('desbloquear-ip').value.trim();
+    if (!ip) { alert('Digite um IP'); return; }
+    try {
+        const res = await api('/api/admin/ip-desbloquear', { method: 'POST', body: JSON.stringify({ ip }) });
+        alert(res.message);
+    } catch (e) { console.error(e); }
+}
+
+async function listarIPsBloqueados() {
+    try {
+        const ips = await api('/api/admin/ips-bloqueados');
+        const container = document.getElementById('ips-bloqueados-lista');
+        const entries = Object.entries(ips);
+        if (entries.length === 0) { container.innerHTML = '<p class="empty-message">Nenhum IP bloqueado</p>'; return; }
+        container.innerHTML = entries.map(([ip, exp]) =>
+            `<div>🔒 ${ip} (expira: ${new Date(exp).toLocaleString()})</div>`
+        ).join('');
+    } catch (e) { console.error(e); }
+}
+
+// === NOVAS FUNÇÕES: API Tokens ===
+async function gerarToken() {
+    const nome = document.getElementById('token-nome').value.trim() || 'API User';
+    const papel = document.getElementById('token-papel').value;
+    try {
+        const res = await api('/api/tokens', { method: 'POST', body: JSON.stringify({ nome, papel }) });
+        alert(`✅ Token gerado para "${res.nome}":\n\n${res.token}\n\nGuarde-o num local seguro!`);
+    } catch (e) { console.error(e); }
+}
+
+async function listarTokens() {
+    try {
+        const tokens = await api('/api/tokens');
+        const container = document.getElementById('tokens-lista');
+        if (!tokens || tokens.length === 0) { container.innerHTML = '<p class="empty-message">Nenhum token</p>'; return; }
+        container.innerHTML = tokens.map(t =>
+            `<div style="padding:0.3rem 0;border-bottom:1px solid var(--border)">
+                ${t.prefixo} | ${t.nome} | ${t.papel} | ${t.ativo ? '✅ Ativo' : '❌ Inativo'}
+            </div>`
+        ).join('');
+    } catch (e) { console.error(e); }
+}
+
+// === NOVAS FUNÇÕES: Notificações ===
+async function testarNotificacoes() {
+    try {
+        const res = await api('/api/notificacoes/testar', { method: 'POST' });
+        const box = document.getElementById('notificacoes-resultado');
+        box.innerHTML = Object.entries(res).map(([k, v]) =>
+            `<div>${v ? '✅' : '❌'} ${k}: ${v ? 'Enviado' : 'Não configurado'}</div>`
+        ).join('');
+    } catch (e) { console.error(e); }
+}
+
+// === NOVAS FUNÇÕES: Relatório Avançado ===
+async function relatorioAvancado() {
+    const periodo = document.getElementById('rel-periodo').value;
+    try {
+        const res = await api(`/api/relatorio/avancado?periodo=${periodo}`);
+        const box = document.getElementById('relatorio-avancado-resultado');
+        let html = `<p><strong>Período:</strong> ${res.periodo_dias} dias</p>`;
+        html += `<p><strong>Total:</strong> ${res.total_periodo} (período anterior: ${res.total_periodo_anterior})</p>`;
+        html += `<p><strong>Variação:</strong> ${res.variacao_percentual}%</p>`;
+        if (res.por_classificacao.length > 0) {
+            html += '<p><strong>Por classificação:</strong></p><ul>';
+            res.por_classificacao.forEach(c => { html += `<li>${c.classificacao}: ${c.total}</li>`; });
+            html += '</ul>';
+        }
+        box.innerHTML = html;
+    } catch (e) { console.error(e); }
+}
+
+async function agendarRelatorio() {
+    const email = document.getElementById('agendar-email').value.trim();
+    const tipo = document.getElementById('agendar-tipo').value;
+    if (!email) { alert('Digite um email'); return; }
+    try {
+        const res = await api('/api/relatorio/agendar', { method: 'POST', body: JSON.stringify({ email, tipo }) });
+        alert(res.message);
+    } catch (e) { console.error(e); }
+}
+
+// === NOVAS FUNÇÕES: Internacionalização ===
+async function definirIdioma(lang) {
+    try {
+        const res = await api('/api/idioma', { method: 'POST', body: JSON.stringify({ lang }) });
+        document.getElementById('idioma-resultado').innerHTML = `<p>✅ Idioma alterado para ${lang}</p>`;
+        carregarTudo();
+    } catch (e) { console.error(e); }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const papel = document.documentElement.dataset.papel || 'moderador';
     if (papel !== 'admin') {

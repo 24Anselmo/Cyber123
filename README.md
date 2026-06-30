@@ -12,16 +12,28 @@ Sistema multiplataforma para deteção de cyberbullying em texto, com interface 
 - **Classificação por níveis** — crítico, alto, médio, baixo, neutro
 - **Dicionário local** — 170+ palavras ofensivas + 80+ gírias regionais (dialetos da Lunda-Sul)
 - **Classificador BERT** — `distilbert-base-multilingual-cased` para deteção complementar via similaridade de cosseno (fallback para rule-based se modelo não carregar)
+- **NLP Avançado** — deteção automática de idioma (português/inglês), stemming (RSLP/Porter), lematização (spaCy), remoção de stopwords, deteção de dialetos angolanos (Umbundu, Kimbundu, Cokwe)
+- **Machine Learning** — modelo LogisticRegression treinado com os dados analisados; classificação por TF-IDF + regressão logística com pesos balanceados
+- **Deteção de Sarcasmo** — análise de pontuação, maiúsculas, contraste de sentimento (TextBlob) e padrões textuais
 - **Alertas inteligentes** — threshold >= 50% de confiança com WebSockets em tempo real
+- **Notificações multi-canal** — Email (SMTP), Telegram Bot e Discord Webhook para alertas críticos
 - **Notificações browser** — notificações nativas ao receber novo alerta
 - **Dashboard com gráficos** — página inicial com gráficos Chart.js (doughnut: classificação, bar: fontes, line: tendência 7 dias)
-- **Painel web** — sidebar com páginas: Dashboard, Análise, Alertas, Análises, Fontes, Dicionário, Usuários, Relatório
-- **Aplicação desktop** — interface Tkinter com as mesmas funcionalidades
+- **Painel web** — sidebar com páginas: Dashboard, Análise, Alertas, Análises, Fontes, Dicionário, Usuários, Relatório, Admin, Monitor, ML/Sarcasmo, Idioma
+- **Aplicação desktop** — interface Tkinter com todas as funcionalidades (NLP, ML, Sarcasmo, Monitor)
 - **BD partilhado** — web e desktop escrevem na mesma base SQLite
 - **Auto-save** — toda análise é guardada automaticamente
 - **Exportação** — relatórios em CSV, TXT e PDF
 - **Monitorização Facebook** — monitorização de páginas via Graph API
+- **Monitorização Twitter/X** — busca e análise de tweets via API v2
+- **Monitorização YouTube** — análise de comentários de vídeos via YouTube Data API
+- **Monitorização Instagram** — análise de comentários de media via Instagram Graph API
 - **Autenticação RBAC** — login protegido com senhas hasheadas (bcrypt); papéis: admin / moderador
+- **API pública** — geração de tokens de API (Bearer) com rate limiting (30 req/min)
+- **Admin** — logs de auditoria, bloqueio de IP por tempo, backup automático da BD a cada hora
+- **Relatórios avançados** — relatório comparativo por período (7/30/90 dias), agendamento de relatórios por email
+- **Internacionalização (i18n)** — interface em Português, Inglês e Francês
+- **Docker** — Dockerfile e docker-compose para deploy simplificado
 - **Testes automatizados** — 15 testes pytest (deteção, API, autenticação)
 - **GitHub** — repositório em `https://github.com/24Anselmo/Cyber123`
 
@@ -32,12 +44,25 @@ Sistema multiplataforma para deteção de cyberbullying em texto, com interface 
 ```
 cyberbullying_detector/
 ├── app/                          # Aplicação Web (Flask)
-│   ├── __init__.py               # Factory, BD, CORS, SocketIO
+│   ├── __init__.py               # Factory, BD, CORS, SocketIO, inits
 │   ├── models.py                 # Modelos SQLAlchemy
-│   ├── routes.py                 # Endpoints REST + login + PDF
+│   ├── routes.py                 # Endpoints REST + login + PDF + novos
 │   ├── detector.py               # Motor de deteção rule-based
-│   ├── bert_classifier.py        # Classificador BERT (distanilbert)
+│   ├── bert_classifier.py        # Classificador BERT (distilbert)
+│   ├── nlp_advanced.py           # NLP: idioma, stemming, lematização
+│   ├── ml_trainer.py             # ML: treino, classificação, sarcasmo
+│   ├── notifications.py          # Email, Telegram, Discord
+│   ├── admin_tools.py            # Auditoria, backup, bloqueio IP
+│   ├── api_tokens.py             # Tokens API + rate limiting
+│   ├── i18n.py                   # Internacionalização
+│   ├── translations/             # Ficheiros de tradução (pt/en/fr)
+│   │   ├── pt.json
+│   │   ├── en.json
+│   │   └── fr.json
 │   ├── facebook_api.py           # Monitorização Facebook Graph API
+│   ├── monitor_twitter.py        # Monitorização Twitter/X API
+│   ├── monitor_youtube.py        # Monitorização YouTube Data API
+│   ├── monitor_instagram.py      # Monitorização Instagram Graph API
 │   ├── socket_events.py          # Eventos WebSocket
 │   ├── static/
 │   │   ├── css/style.css         # Estilos web
@@ -55,13 +80,22 @@ cyberbullying_detector/
 ├── data/
 │   ├── cyberbullying.db          # Base de dados SQLite partilhada
 │   ├── local_dictionary.json     # Dicionário local (80+ girias)
-│   └── debug.log                 # Log de diagnóstico
+│   ├── debug.log                 # Log de diagnóstico
+│   ├── audit.log                 # Log de auditoria
+│   ├── api_tokens.json           # Tokens de API persistidos
+│   └── backups/                  # Backups automáticos da BD
+├── models/                       # Modelos ML treinados
+│   ├── cyberbullying_model.pkl
+│   └── vectorizer.pkl
 ├── tests/
 │   ├── conftest.py               # Fixture BD temporário
 │   ├── test_detector.py          # Testes do motor de deteção
 │   ├── test_api.py               # Testes dos endpoints REST
 │   └── test_auth.py              # Testes de autenticação
 ├── requirements.txt              # Dependências Python
+├── Dockerfile                    # Imagem Docker
+├── docker-compose.yml            # Orquestração Docker
+├── .env.example                  # Exemplo de variáveis de ambiente
 └── run.py                        # Ponto de entrada web
 ```
 
@@ -69,21 +103,27 @@ cyberbullying_detector/
 
 ## Tecnologias
 
-| Componente       | Tecnologia                          |
-|------------------|-------------------------------------|
-| Web server       | Flask 3.0 + Flask-SocketIO          |
-| ORM              | SQLAlchemy + SQLite                 |
-| Frontend         | HTML, CSS, JavaScript (vanilla)     |
-| Desktop          | Tkinter (Python)                    |
-| Deteção          | Rule-based (dicionário+pesos) + BERT|
-| Autenticação     | bcrypt (senhas hasheadas)           |
-| WebSockets       | Flask-SocketIO + eventlet           |
-| BERT             | transformers + torch (distilbert)   |
-| PDF              | fpdf2                               |
-| CORS             | Flask-CORS                          |
-| Testes           | pytest                              |
-| Empacotamento    | PyInstaller (EXE --onefile)         |
-| Repositório      | GitHub                              |
+| Componente         | Tecnologia                                |
+|--------------------|-------------------------------------------|
+| Web server         | Flask 3.0 + Flask-SocketIO                |
+| ORM                | SQLAlchemy + SQLite                       |
+| Frontend           | HTML, CSS, JavaScript (vanilla)           |
+| Desktop            | Tkinter (Python)                          |
+| Deteção            | Rule-based (dicionário+pesos) + BERT      |
+| NLP                | langdetect, NLTK (RSLP/Porter), spaCy     |
+| ML                 | scikit-learn (TF-IDF + LogisticRegression)|
+| Sarcasmo           | TextBlob (sentiment analysis)             |
+| Autenticação       | bcrypt (senhas hasheadas)                 |
+| WebSockets         | Flask-SocketIO + eventlet                 |
+| BERT               | transformers + torch (distilbert)         |
+| PDF                | fpdf2                                     |
+| CORS               | Flask-CORS                                |
+| Notificações       | SMTP, Telegram Bot API, Discord Webhook   |
+| Monitorização      | Facebook Graph API, Twitter API v2, YouTube Data API, Instagram Graph API |
+| Docker             | Docker + docker-compose                   |
+| Testes             | pytest                                    |
+| Empacotamento      | PyInstaller (EXE --onefile)               |
+| Repositório        | GitHub                                    |
 
 ---
 
@@ -162,6 +202,26 @@ Todas as rotas requerem autenticação por sessão (login via `/login`). Retorna
 | GET    | `/api/relatorio/pdf`              | Relatório PDF para download        |
 | POST   | `/api/inicializar`                | Carregar dados iniciais            |
 | POST   | `/api/importar-comentarios`       | Importar comentários de teste      |
+| POST   | `/api/nlp/analisar`               | Análise NLP (idioma, stemming, lematização) |
+| POST   | `/api/ml/treinar`                 | Treinar modelo ML (admin)          |
+| POST   | `/api/ml/classificar`             | Classificar texto com ML           |
+| POST   | `/api/sarcasmo/detetar`           | Detetar sarcasmo no texto          |
+| POST   | `/api/notificacoes/testar`        | Testar notificações (admin)        |
+| POST   | `/api/monitor/twitter`            | Monitorar Twitter/X                |
+| POST   | `/api/monitor/youtube`            | Monitorar YouTube                  |
+| POST   | `/api/monitor/instagram`          | Monitorar Instagram                |
+| GET    | `/api/admin/logs`                 | Logs de auditoria (admin)          |
+| POST   | `/api/admin/backup`               | Backup da BD (admin)               |
+| POST   | `/api/admin/ip-bloquear`          | Bloquear IP (admin)                |
+| POST   | `/api/admin/ip-desbloquear`       | Desbloquear IP (admin)             |
+| GET    | `/api/admin/ips-bloqueados`       | Listar IPs bloqueados (admin)      |
+| GET    | `/api/tokens`                     | Listar tokens API (admin)          |
+| POST   | `/api/tokens`                     | Gerar token API (admin)            |
+| DELETE | `/api/tokens/<token>`             | Revogar token (admin)              |
+| POST   | `/api/idioma`                     | Definir idioma (pt/en/fr)          |
+| GET    | `/api/idiomas`                    | Listar idiomas disponíveis         |
+| GET    | `/api/relatorio/avancado`         | Relatório avançado comparativo     |
+| POST   | `/api/relatorio/agendar`          | Agendar relatório por email        |
 
 ### WebSockets
 

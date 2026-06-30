@@ -8,6 +8,10 @@ class Detector:
         self._load_dicionario_local()
         self.use_bert = use_bert
         self.bert_detector = None
+        self.nlp = None
+        self.ml = None
+        self.sarcasmo = None
+        self._init_extra()
         if use_bert:
             try:
                 from app.bert_classifier import BertDetector
@@ -76,6 +80,19 @@ class Detector:
             ('bisbilhoteiro', 'baixo'), ('chato de galocha', 'baixo'), ('pentelho', 'baixo'),
         ]
 
+    def _init_extra(self):
+        try:
+            from app.nlp_advanced import AnalisadorNLP
+            self.nlp = AnalisadorNLP()
+        except Exception:
+            pass
+        try:
+            from app.ml_trainer import CyberbullyingML, SarcasmoDetector
+            self.ml = CyberbullyingML()
+            self.sarcasmo = SarcasmoDetector()
+        except Exception:
+            pass
+
     def _load_dicionario_local(self):
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         dict_path = os.path.join(base_dir, 'data', 'local_dictionary.json')
@@ -141,6 +158,26 @@ class Detector:
             'critico': conf >= 50,
             'nivel_geral': nivel_geral
         }
+
+        if self.nlp:
+            try:
+                resultado['nlp'] = self.nlp.analisar(texto)
+            except Exception:
+                pass
+
+        if self.sarcasmo:
+            try:
+                resultado['sarcasmo'] = self.sarcasmo.detetar(texto)
+            except Exception:
+                pass
+
+        if self.ml:
+            try:
+                ml_res = self.ml.classificar(texto)
+                resultado['ml_classificacao'] = ml_res['classificacao']
+                resultado['ml_confianca'] = ml_res['confianca']
+            except Exception:
+                pass
 
         if self.use_bert and self.bert_detector:
             try:

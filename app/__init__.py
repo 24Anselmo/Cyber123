@@ -1,12 +1,18 @@
 import os
 import sys
 import bcrypt
+import threading
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 
 db = SQLAlchemy()
 socketio = None
+nlp_analyzer = None
+ml_classifier = None
+email_notifier = None
+telegram_notifier = None
+discord_notifier = None
 
 def create_app(db_path=None):
     flask_app = Flask(__name__)
@@ -70,4 +76,31 @@ def create_app(db_path=None):
     with flask_app.app_context():
         from app import socket_events
     
+    with flask_app.app_context():
+        from app.nlp_advanced import AnalisadorNLP
+        global nlp_analyzer
+        nlp_analyzer = AnalisadorNLP()
+
+    with flask_app.app_context():
+        from app.ml_trainer import CyberbullyingML
+        global ml_classifier
+        try:
+            ml_classifier = CyberbullyingML()
+        except Exception:
+            pass
+
+    with flask_app.app_context():
+        from app.notifications import EmailNotifier, TelegramNotifier, DiscordNotifier
+        global email_notifier, telegram_notifier, discord_notifier
+        email_notifier = EmailNotifier()
+        telegram_notifier = TelegramNotifier()
+        discord_notifier = DiscordNotifier()
+
+    with flask_app.app_context():
+        from app.admin_tools import iniciar_backup_auto
+        try:
+            iniciar_backup_auto(intervalo=3600)
+        except Exception:
+            pass
+
     return flask_app

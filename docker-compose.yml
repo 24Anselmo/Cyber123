@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  cyberbullying-detector:
+    build: .
+    container_name: cyberbullying-detector
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+      - CYBERBULLYING_DB_PATH=/app/data/cyberbullying.db
+      - SMTP_HOST=${SMTP_HOST:-}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USER=${SMTP_USER:-}
+      - SMTP_PASS=${SMTP_PASS:-}
+      - FROM_EMAIL=${FROM_EMAIL:-}
+      - ALERT_EMAILS=${ALERT_EMAILS:-}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
+      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID:-}
+      - DISCORD_WEBHOOK_URL=${DISCORD_WEBHOOK_URL:-}
+      - TWITTER_BEARER_TOKEN=${TWITTER_BEARER_TOKEN:-}
+      - YOUTUBE_API_KEY=${YOUTUBE_API_KEY:-}
+      - INSTAGRAM_ACCESS_TOKEN=${INSTAGRAM_ACCESS_TOKEN:-}
+      - INSTAGRAM_USER_ID=${INSTAGRAM_USER_ID:-}
+    volumes:
+      - cyberbullying_data:/app/data
+    restart: unless-stopped
+
+volumes:
+  cyberbullying_data:

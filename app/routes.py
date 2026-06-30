@@ -486,3 +486,280 @@ def gerar_relatorio_pdf():
         'Content-Type': 'application/pdf',
         'Content-Disposition': 'attachment; filename="relatorio_cyberbullying.pdf"'
     }
+
+# === NOVOS ENDPOINTS: NLP Avançado ===
+@bp.route('/api/nlp/analisar', methods=['POST'])
+@login_required
+def api_nlp_analisar():
+    texto = request.json.get('texto', '')
+    if not texto:
+        return jsonify({'erro': 'Texto vazio'}), 400
+    from app import nlp_analyzer
+    if nlp_analyzer is None:
+        return jsonify({'erro': 'NLP não disponível'}), 503
+    resultado = nlp_analyzer.analisar(texto)
+    return jsonify(resultado)
+
+# === NOVOS ENDPOINTS: ML Trainer ===
+@bp.route('/api/ml/treinar', methods=['POST'])
+@login_required
+@admin_required
+def api_ml_treinar():
+    from app.ml_trainer import CyberbullyingML
+    ml = CyberbullyingML()
+    forcar = request.json.get('forcar', False)
+    resultado = ml.treinar(forcar=forcar)
+    return jsonify(resultado)
+
+@bp.route('/api/ml/classificar', methods=['POST'])
+@login_required
+def api_ml_classificar():
+    texto = request.json.get('texto', '')
+    if not texto:
+        return jsonify({'erro': 'Texto vazio'}), 400
+    from app.ml_trainer import CyberbullyingML
+    ml = CyberbullyingML()
+    resultado = ml.classificar(texto)
+    return jsonify(resultado)
+
+@bp.route('/api/sarcasmo/detetar', methods=['POST'])
+@login_required
+def api_sarcasmo():
+    texto = request.json.get('texto', '')
+    if not texto:
+        return jsonify({'erro': 'Texto vazio'}), 400
+    from app.ml_trainer import SarcasmoDetector
+    sd = SarcasmoDetector()
+    return jsonify(sd.detetar(texto))
+
+# === NOVOS ENDPOINTS: Notificações ===
+@bp.route('/api/notificacoes/testar', methods=['POST'])
+@login_required
+@admin_required
+def api_testar_notificacoes():
+    from app import email_notifier, telegram_notifier, discord_notifier
+    resultados = {}
+    if email_notifier and email_notifier.disponivel:
+        resultados['email'] = email_notifier.alerta_critico('Teste', 'Crítico', 95)
+    if telegram_notifier and telegram_notifier.disponivel:
+        resultados['telegram'] = telegram_notifier.alerta_critico('Teste de alerta', 'Crítico', 95)
+    if discord_notifier and discord_notifier.disponivel:
+        resultados['discord'] = discord_notifier.alerta_critico('Teste de alerta', 'Crítico', 95)
+    return jsonify(resultados)
+
+@bp.route('/api/notificacoes/config', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def api_notificacoes_config():
+    from app.models import Config
+    if request.method == 'POST':
+        data = request.json
+        for chave, valor in data.items():
+            cfg = Config.query.filter_by(chave=chave).first()
+            if cfg:
+                cfg.valor = str(valor)
+            else:
+                db.session.add(Config(chave=chave, valor=str(valor)))
+        db.session.commit()
+        return jsonify({'message': 'Configurações salvas'})
+    configs = Config.query.all()
+    return jsonify({c.chave: c.valor for c in configs})
+
+# === NOVOS ENDPOINTS: Monitorização (Twitter, YouTube, Instagram) ===
+@bp.route('/api/monitor/twitter', methods=['POST'])
+@login_required
+@admin_required
+def api_monitor_twitter():
+    from app.monitor_twitter import TwitterMonitor
+    query = request.json.get('query', '')
+    if not query:
+        return jsonify({'erro': 'Query vazia'}), 400
+    tm = TwitterMonitor()
+    resultado = tm.analisar_comentarios(query, detector)
+    return jsonify(resultado)
+
+@bp.route('/api/monitor/youtube', methods=['POST'])
+@login_required
+@admin_required
+def api_monitor_youtube():
+    from app.monitor_youtube import YouTubeMonitor
+    video_id = request.json.get('video_id', '')
+    if not video_id:
+        return jsonify({'erro': 'video_id vazio'}), 400
+    ym = YouTubeMonitor()
+    resultado = ym.analisar_comentarios(video_id, detector)
+    return jsonify(resultado)
+
+@bp.route('/api/monitor/instagram', methods=['POST'])
+@login_required
+@admin_required
+def api_monitor_instagram():
+    from app.monitor_instagram import InstagramMonitor
+    media_id = request.json.get('media_id', '')
+    if not media_id:
+        return jsonify({'erro': 'media_id vazio'}), 400
+    im = InstagramMonitor()
+    resultado = im.analisar_comentarios(media_id, detector)
+    return jsonify(resultado)
+
+# === NOVOS ENDPOINTS: Auditoria e Admin ===
+@bp.route('/api/admin/logs', methods=['GET'])
+@login_required
+@admin_required
+def api_admin_logs():
+    from app.admin_tools import obter_logs_auditoria
+    logs = obter_logs_auditoria()
+    return jsonify(logs)
+
+@bp.route('/api/admin/backup', methods=['POST'])
+@login_required
+@admin_required
+def api_admin_backup():
+    from app.admin_tools import backup_bd
+    resultado = backup_bd()
+    return jsonify(resultado)
+
+@bp.route('/api/admin/ip-bloquear', methods=['POST'])
+@login_required
+@admin_required
+def api_admin_ip_bloquear():
+    from app.admin_tools import bloquear_ip
+    ip = request.json.get('ip', '')
+    minutos = request.json.get('minutos', 60)
+    if not ip:
+        return jsonify({'erro': 'IP vazio'}), 400
+    bloquear_ip(ip, int(minutos))
+    return jsonify({'message': f'IP {ip} bloqueado por {minutos} min'})
+
+@bp.route('/api/admin/ip-desbloquear', methods=['POST'])
+@login_required
+@admin_required
+def api_admin_ip_desbloquear():
+    from app.admin_tools import desbloquear_ip
+    ip = request.json.get('ip', '')
+    if not ip:
+        return jsonify({'erro': 'IP vazio'}), 400
+    desbloquear_ip(ip)
+    return jsonify({'message': f'IP {ip} desbloqueado'})
+
+@bp.route('/api/admin/ips-bloqueados', methods=['GET'])
+@login_required
+@admin_required
+def api_admin_ips_bloqueados():
+    from app.admin_tools import obter_ips_bloqueados
+    return jsonify(obter_ips_bloqueados())
+
+# === NOVOS ENDPOINTS: API Tokens ===
+@bp.route('/api/tokens', methods=['GET'])
+@login_required
+@admin_required
+def api_listar_tokens():
+    from app.api_tokens import listar_tokens
+    return jsonify(listar_tokens())
+
+@bp.route('/api/tokens', methods=['POST'])
+@login_required
+@admin_required
+def api_gerar_token():
+    from app.api_tokens import gerar_token
+    nome = request.json.get('nome', 'API User')
+    papel = request.json.get('papel', 'moderador')
+    token = gerar_token(nome, papel)
+    return jsonify({'token': token, 'nome': nome, 'papel': papel})
+
+@bp.route('/api/tokens/<token>', methods=['DELETE'])
+@login_required
+@admin_required
+def api_revogar_token(token):
+    from app.api_tokens import revogar_token
+    if revogar_token(token):
+        return jsonify({'message': 'Token revogado'})
+    return jsonify({'erro': 'Token não encontrado'}), 404
+
+# === NOVOS ENDPOINTS: Internacionalização ===
+@bp.route('/api/idioma', methods=['POST'])
+@login_required
+def api_definir_idioma():
+    lang = request.json.get('lang', 'pt')
+    if lang not in ['pt', 'en', 'fr']:
+        lang = 'pt'
+    session['lang'] = lang
+    return jsonify({'lang': lang})
+
+@bp.route('/api/idiomas', methods=['GET'])
+@login_required
+def api_idiomas():
+    from app.i18n import idiomas_disponiveis
+    return jsonify(idiomas_disponiveis())
+
+# === NOVOS ENDPOINTS: Relatórios Avançados ===
+@bp.route('/api/relatorio/avancado', methods=['GET'])
+@login_required
+@admin_required
+def api_relatorio_avancado():
+    from sqlalchemy import func
+    from datetime import timedelta
+    periodo = request.args.get('periodo', '30')
+    dias = int(periodo)
+    data_limite = (datetime.now() - timedelta(days=dias)).isoformat()
+
+    total = Analise.query.count()
+    total_periodo = Analise.query.filter(Analise.data >= data_limite).count()
+    por_classificacao = db.session.query(Analise.classificacao, func.count(Analise.id).label('total'))\
+        .filter(Analise.data >= data_limite).group_by(Analise.classificacao).all()
+    por_fonte = db.session.query(Fonte.nome, func.count(Analise.id).label('total'))\
+        .filter(Analise.data >= data_limite)\
+        .join(Comentario, Fonte.id == Comentario.fonte_id)\
+        .join(Analise, Comentario.id == Analise.comentario_id)\
+        .group_by(Fonte.nome).all()
+
+    if dias == 30:
+        data_anterior = (datetime.now() - timedelta(days=60)).isoformat()
+        total_anterior = Analise.query.filter(
+            Analise.data >= data_anterior, Analise.data < data_limite).count()
+    else:
+        total_anterior = 0
+
+    variacao = 0
+    if total_anterior > 0 and total_periodo > 0:
+        variacao = round((total_periodo - total_anterior) / total_anterior * 100, 2)
+
+    return jsonify({
+        'periodo_dias': dias,
+        'total_geral': total,
+        'total_periodo': total_periodo,
+        'total_periodo_anterior': total_anterior,
+        'variacao_percentual': variacao,
+        'por_classificacao': [{'classificacao': c, 'total': t} for c, t in por_classificacao],
+        'por_fonte': [{'fonte': f, 'total': t} for f, t in por_fonte],
+        'data_inicio': data_limite,
+        'data_fim': datetime.now().isoformat(),
+    })
+
+@bp.route('/api/relatorio/agendar', methods=['POST'])
+@login_required
+@admin_required
+def api_relatorio_agendar():
+    from app.models import RelatorioAgendado
+    data = request.json
+    email = data.get('email', '')
+    tipo = data.get('tipo', 'diario')
+    if not email:
+        return jsonify({'erro': 'Email vazio'}), 400
+    ra = RelatorioAgendado(email=email, tipo=tipo, ativo=1)
+    db.session.add(ra)
+    db.session.commit()
+    return jsonify({'message': f'Relatório {tipo} agendado para {email}'})
+
+# === NOVOS ENDPOINTS: Exportar Dashboard como Imagem ===
+@bp.route('/api/dashboard/exportar', methods=['GET'])
+@login_required
+def api_exportar_dashboard():
+    try:
+        from io import BytesIO
+        import base64
+        import json as _json
+        data = get_dashboard().json
+        return jsonify({'dashboard_data': data, 'msg': 'Use a UI para capturar como imagem'})
+    except Exception as e:
+        return jsonify({'erro': str(e)}), 500

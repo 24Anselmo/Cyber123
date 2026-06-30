@@ -64,6 +64,19 @@
                 🔄 Atualizar
             </button>
             <div class="menu-divider"></div>
+            <div class="menu-divider"></div>
+            <button class="menu-btn menu-action" data-admin="1" onclick="mostrarPagina('admin')">
+                🔐 Admin
+            </button>
+            <button class="menu-btn menu-action" onclick="mostrarPagina('monitor')">
+                📡 Monitor
+            </button>
+            <button class="menu-btn menu-action" onclick="mostrarPagina('ml')">
+                🤖 ML/Sarcasmo
+            </button>
+            <button class="menu-btn menu-action" onclick="mostrarPagina('idioma')">
+                🌐 Idioma
+            </button>
             <button class="menu-btn menu-action" onclick="minhaSenha()">
                 🔑 Minha Senha
             </button>
@@ -134,11 +147,12 @@
                         <table id="analises-table">
                             <thead><tr>
                                 <th>Data</th><th>Autor</th><th>Texto</th>
-                                <th>Classificação</th><th>Confiança</th><th>Gírias</th><th>Nível</th><th>Ação</th>
+                                <th>Classificação</th><th>Confiança</th><th>Gírias</th><th>Nível</th><th>ML</th><th>Sarcasmo</th><th>Ação</th>
                             </tr></thead>
                             <tbody id="analises-body"></tbody>
                         </table>
                     </div>
+                    <div id="analises-pagination" class="pagination"></div>
                 </section>
             </div>
 
@@ -200,6 +214,149 @@
                     <button onclick="gerarRelatorio()">Gerar Relatório</button>
                     <button onclick="baixarRelatorioPDF()" style="margin-left:8px">📥 Baixar PDF</button>
                     <div id="relatorio-resultado"></div>
+                </section>
+                <section class="section" data-admin="1">
+                    <h2>📊 Relatório Avançado</h2>
+                    <select id="rel-periodo" style="margin-bottom:0.5rem">
+                        <option value="7">Últimos 7 dias</option>
+                        <option value="30" selected>Últimos 30 dias</option>
+                        <option value="90">Últimos 90 dias</option>
+                    </select>
+                    <button onclick="relatorioAvancado()">Gerar Comparativo</button>
+                    <div id="relatorio-avancado-resultado"></div>
+                </section>
+                <section class="section" data-admin="1">
+                    <h2>📧 Agendar Relatório</h2>
+                    <div class="form-row">
+                        <input type="email" id="agendar-email" placeholder="Email para receber">
+                        <select id="agendar-tipo">
+                            <option value="diario">Diário</option>
+                            <option value="semanal">Semanal</option>
+                            <option value="mensal">Mensal</option>
+                        </select>
+                        <button onclick="agendarRelatorio()">Agendar</button>
+                    </div>
+                </section>
+            </div>
+
+            <div id="page-admin" class="page">
+                <section class="section">
+                    <h2>🔐 Administração</h2>
+                </section>
+                <section class="section">
+                    <h3>📋 Logs de Auditoria</h3>
+                    <button onclick="carregarLogs()">Carregar Logs</button>
+                    <div id="logs-lista" style="margin-top:0.5rem;font-size:0.8rem;max-height:300px;overflow-y:auto"></div>
+                </section>
+                <section class="section">
+                    <h3>💾 Backup da Base de Dados</h3>
+                    <button onclick="fazerBackup()">Gerar Backup Agora</button>
+                    <div id="backup-resultado" style="margin-top:0.5rem"></div>
+                </section>
+                <section class="section">
+                    <h3>🔒 Bloqueio de IP</h3>
+                    <div class="form-row">
+                        <input type="text" id="bloquear-ip" placeholder="IP para bloquear">
+                        <input type="number" id="bloquear-minutos" placeholder="Minutos" value="60" style="max-width:100px">
+                        <button onclick="bloquearIP()">Bloquear</button>
+                    </div>
+                    <div class="form-row">
+                        <input type="text" id="desbloquear-ip" placeholder="IP para desbloquear">
+                        <button onclick="desbloquearIP()">Desbloquear</button>
+                    </div>
+                    <button onclick="listarIPsBloqueados()">Listar IPs Bloqueados</button>
+                    <div id="ips-bloqueados-lista" style="margin-top:0.5rem"></div>
+                </section>
+                <section class="section">
+                    <h3>🔑 Tokens de API</h3>
+                    <div class="form-row">
+                        <input type="text" id="token-nome" placeholder="Nome do token">
+                        <select id="token-papel">
+                            <option value="moderador">Moderador</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                        <button onclick="gerarToken()">Gerar Token</button>
+                    </div>
+                    <button onclick="listarTokens()">Listar Tokens</button>
+                    <div id="tokens-lista" style="margin-top:0.5rem"></div>
+                </section>
+                <section class="section">
+                    <h3>📡 Notificações</h3>
+                    <button onclick="testarNotificacoes()">Testar Notificações</button>
+                    <div id="notificacoes-resultado" style="margin-top:0.5rem"></div>
+                </section>
+            </div>
+
+            <div id="page-monitor" class="page">
+                <section class="section">
+                    <h2>📡 Monitorização em Tempo Real</h2>
+                </section>
+                <section class="section">
+                    <h3>🐦 Twitter/X</h3>
+                    <div class="form-row">
+                        <input type="text" id="twitter-query" placeholder="Query de busca (ex: cyberbullying)">
+                        <button onclick="monitorTwitter()">Analisar</button>
+                    </div>
+                    <div id="twitter-resultado"></div>
+                </section>
+                <section class="section">
+                    <h3>▶️ YouTube</h3>
+                    <div class="form-row">
+                        <input type="text" id="youtube-video-id" placeholder="ID do vídeo">
+                        <button onclick="monitorYoutube()">Analisar Comentários</button>
+                    </div>
+                    <div id="youtube-resultado"></div>
+                </section>
+                <section class="section">
+                    <h3>📸 Instagram</h3>
+                    <div class="form-row">
+                        <input type="text" id="instagram-media-id" placeholder="ID do media">
+                        <button onclick="monitorInstagram()">Analisar Comentários</button>
+                    </div>
+                    <div id="instagram-resultado"></div>
+                </section>
+            </div>
+
+            <div id="page-ml" class="page">
+                <section class="section">
+                    <h2>🤖 Machine Learning & Sarcasmo</h2>
+                </section>
+                <section class="section" data-admin="1">
+                    <h3>🎯 Treinar Modelo</h3>
+                    <p style="font-size:0.85rem;color:var(--text-sec);margin-bottom:0.5rem">
+                        Treina um modelo LogisticRegression com os dados analisados na BD.
+                    </p>
+                    <button onclick="treinarML()">Treinar Agora</button>
+                    <div id="ml-treino-resultado"></div>
+                </section>
+                <section class="section">
+                    <h3>🔍 Classificar com ML</h3>
+                    <textarea id="ml-texto" placeholder="Digite texto para classificar com ML..." style="min-height:60px"></textarea>
+                    <button onclick="classificarML()">Classificar</button>
+                    <div id="ml-classificacao-resultado"></div>
+                </section>
+                <section class="section">
+                    <h3>😏 Deteção de Sarcasmo</h3>
+                    <textarea id="sarcasmo-texto" placeholder="Digite texto para detetar sarcasmo..." style="min-height:60px"></textarea>
+                    <button onclick="detetarSarcasmo()">Detetar Sarcasmo</button>
+                    <div id="sarcasmo-resultado"></div>
+                </section>
+                <section class="section">
+                    <h3>🌍 NLP Avançado</h3>
+                    <textarea id="nlp-texto" placeholder="Digite texto para análise NLP..." style="min-height:60px"></textarea>
+                    <button onclick="analisarNLP()">Analisar</button>
+                    <div id="nlp-resultado"></div>
+                </section>
+            </div>
+
+            <div id="page-idioma" class="page">
+                <section class="section">
+                    <h2>🌐 Idioma / Language / Langue</h2>
+                    <p style="margin-bottom:1rem">Selecione o idioma da interface:</p>
+                    <button onclick="definirIdioma('pt')" style="margin:0.25rem">🇵🇹 Português</button>
+                    <button onclick="definirIdioma('en')" style="margin:0.25rem">🇬🇧 English</button>
+                    <button onclick="definirIdioma('fr')" style="margin:0.25rem">🇫🇷 Français</button>
+                    <div id="idioma-resultado" style="margin-top:1rem"></div>
                 </section>
             </div>
         </main>

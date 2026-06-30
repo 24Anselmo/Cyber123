@@ -63,3 +63,42 @@ class Giria(db.Model):
     def to_dict(self):
         return {'id': self.id, 'termo': self.termo, 'significado': self.significado,
                 'tipo': self.tipo, 'nivel': self.nivel}
+
+class AuditoriaLog(db.Model):
+    __tablename__ = 'auditoria_logs'
+    id = db.Column(db.Integer, primary_key=True)
+    data = db.Column(db.Text)
+    ip = db.Column(db.Text)
+    usuario = db.Column(db.Text)
+    acao = db.Column(db.Text)
+    detalhe = db.Column(db.Text)
+
+class ApiToken(db.Model):
+    __tablename__ = 'api_tokens'
+    id = db.Column(db.Integer, primary_key=True)
+    token = db.Column(db.Text, unique=True)
+    nome = db.Column(db.Text)
+    papel = db.Column(db.Text, default='moderador')
+    criado = db.Column(db.Text)
+    ativo = db.Column(db.Integer, default=1)
+
+class IpBlock(db.Model):
+    __tablename__ = 'ip_blocks'
+    id = db.Column(db.Integer, primary_key=True)
+    ip = db.Column(db.Text)
+    expira = db.Column(db.Text)
+    motivo = db.Column(db.Text)
+
+class Config(db.Model):
+    __tablename__ = 'config'
+    id = db.Column(db.Integer, primary_key=True)
+    chave = db.Column(db.Text, unique=True)
+    valor = db.Column(db.Text)
+
+class RelatorioAgendado(db.Model):
+    __tablename__ = 'relatorios_agendados'
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.Text)
+    tipo = db.Column(db.Text, default='diario')
+    ativo = db.Column(db.Integer, default=1)
+    proximo_envio = db.Column(db.Text)
